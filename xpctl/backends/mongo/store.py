@@ -156,6 +156,8 @@ class MongoRepo(ExperimentRepo):
             event_type = 'test_events'
         reduction_dim = reduction_dim if reduction_dim is not None else 'sha1'
         coll = self.db[task]
+        if prop == 'dataset':
+            value = self.get_related_datasets(task, value)
         d = {prop: value}
         query = self._update_query({}, **d)
         all_results = list(coll.find(query))
@@ -165,7 +167,8 @@ class MongoRepo(ExperimentRepo):
         resultset = mongo_to_experiment_set(task, all_results, event_type=event_type, metrics=metrics)
         if type(resultset) is BackendError:
             return resultset
-        experiment_aggregate_set = aggregate_results(resultset, reduction_dim, event_type, numexp_reduction_dim)
+        experiment_aggregate_set = aggregate_results(resultset, reduction_dim, event_type, numexp_reduction_dim,
+                                                     prop)
         if sort is None or sort == 'None':
             return experiment_aggregate_set
         else:
@@ -184,19 +187,25 @@ class MongoRepo(ExperimentRepo):
             return query
         else:
             if "id" in kwargs and kwargs["id"]:
-                if type(kwargs["id"]) == list:
+                if type(kwargs["id"]) is list:
                     query.update({"_id": {"$in": [ObjectId(x) for x in kwargs["id"]]}})
                 else:
                     query.update({"_id": ObjectId(kwargs["id"])})
                 kwargs.pop("id")
             if "eid" in kwargs and kwargs["eid"]:
-                if type(kwargs["eid"]) == list:
+                if type(kwargs["eid"]) is list:
                     query.update({"_id": {"$in": [ObjectId(x) for x in kwargs["eid"]]}})
                 else:
                     query.update({"_id": ObjectId(kwargs["eid"])})
                 kwargs.pop("eid")
             if "dataset" in kwargs:
-                query.update({"$or": [{"config.dataset": kwargs["dataset"]}, {"dataset": kwargs["dataset"]}]})
+                if type(kwargs["dataset"]) is list:
+                    query.update({"$or": [
+                        {"config.dataset": {"$in": kwargs["dataset"]}},
+                        {"dataset": {"$in": kwargs["dataset"]}}
+                    ]})
+                else:
+                    query.update({"$or": [{"config.dataset": kwargs["dataset"]}, {"dataset": kwargs["dataset"]}]})
                 kwargs.pop("dataset")
             for key, value in kwargs.items():
                 if type(value) == list:
@@ -259,7 +268,31 @@ class MongoRepo(ExperimentRepo):
             return BackendError('no config [{}] in [{}] database'.format(sha1, task))
         else:
             return j["config"]
-
+    
+    def get_related_datasets(self, task, dataset):
+        """
+        for now, lets just get the datasets from all tasks and filter by 'project:name:features'
+        We should have a dataset collection in the future.
+        :param dataset:
+        :return:
+        """
+        coll = self.db[task]
+        projection = {"dataset": 1, "config.dataset": 1, "_id": 0}
+        results = list(coll.find({}, projection))
+        all_datasets = []
+        for result in results:
+            all_datasets.append(result.get('dataset'))
+            all_datasets.append(result.get('config', {}).get('dataset'))
+        all_datasets = set([x for x in all_datasets if x is not None])
+        if dataset in all_datasets:
+            return [dataset]
+        else:
+            datasets = []
+            for d in all_datasets:
+                if d.startswith(dataset):
+                    datasets.append(d)
+            return datasets
+    
     def get_task_names(self):
         return self.db.collection_names()
 

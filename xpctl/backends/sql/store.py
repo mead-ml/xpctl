@@ -202,8 +202,14 @@ class SQLRepo(ExperimentRepo):
         if event_type is None or event_type == 'None':
             event_type = 'test_events'
         reduction_dim = reduction_dim if reduction_dim is not None else 'sha1'
-        hits = session.query(SqlExperiment).filter(getattr(SqlExperiment, prop) == value)\
-            .filter(SqlExperiment.task == task)
+        if prop == 'dataset':
+            value = self.get_related_datasets(session, task, value)
+        if type(value) is list:
+            hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)\
+                .filter(getattr(SqlExperiment, prop).in_(value))
+        else:
+            hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)\
+                .filter(getattr(SqlExperiment, prop) == value)
         if hits is None or not hits.first():
             return BackendError(message='no information available for [{}]: [{}] in task database [{}]'
                                 .format(prop, value, task))
@@ -215,7 +221,7 @@ class SQLRepo(ExperimentRepo):
             else:
                 data_experiments.append(data_experiment)
         experiment_aggregate_set = self.aggregate_sql_results(data_experiments, reduction_dim, event_type,
-                                                              numexp_reduction_dim)
+                                                              numexp_reduction_dim, prop)
         if sort is None or sort == 'None':
             return experiment_aggregate_set
         else:
@@ -362,9 +368,23 @@ class SQLRepo(ExperimentRepo):
         if dump_dir != dump:
             shutil.rmtree(dump_dir)
 
-    def aggregate_sql_results(self, data_experiments, reduction_dim, event_type, numexp_reduction_dim):
+    @staticmethod
+    def get_related_datasets(session, task, dataset):
+        hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)
+        all_datasets = set([exp.dataset for exp in hits])
+        if dataset in all_datasets:
+            return [dataset]
+        else:
+            datasets = []
+            for d in all_datasets:
+                print(d)
+                if d.startswith(dataset):
+                    datasets.append(d)
+            return datasets
+
+    def aggregate_sql_results(self, data_experiments, reduction_dim, event_type, numexp_reduction_dim, prop):
         experiment_set = self.get_data_experiment_set(data_experiments)
-        return aggregate_results(experiment_set, reduction_dim, event_type, numexp_reduction_dim)
+        return aggregate_results(experiment_set, reduction_dim, event_type, numexp_reduction_dim, prop=prop)
 
     def sql_result_to_data_experiment(self, exp, event_type, metrics_from_user):
         _exp = Experiment(

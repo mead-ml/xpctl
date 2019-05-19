@@ -84,7 +84,7 @@ def experiment_aggregate_to_df(exp_agg, prop_name_loc, event_type='test_events',
 def experiment_aggregate_list_to_df(exp_aggs, event_type='test_events',
                                     aggregate_fns=['min', 'max', 'avg', 'std']):
     result_df = pd.DataFrame()
-    prop_name_loc = {'sha1': 0, 'num_exps': 1}
+    prop_name_loc = {'dataset': 0, 'sha1': 1, 'num_exps': 2}
     for exp_agg in exp_aggs:
         result_df = result_df.append(experiment_aggregate_to_df(exp_agg, prop_name_loc, event_type, aggregate_fns))
     return result_df
