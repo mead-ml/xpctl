@@ -12,7 +12,7 @@ from xpctl.xpclient.rest import ApiException
 from xpctl.clihelpers import experiment_to_df, experiment_aggregate_list_to_df, experiment_list_to_df, \
     task_summary_to_df, task_summaries_to_df, read_config_stream
 from xpctl.utils import to_swagger_experiment, store_model, write_config_file
-from mead.utils import hash_config
+from mead.utils import hash_config, get_dataset_from_key, index_by_label
 from baseline.utils import read_config_file
 
 EVENT_TYPES = {
@@ -231,7 +231,8 @@ def delete(task, eid):
 @click.argument('task')
 @click.argument('config')
 @click.argument('log')
-def putresult(task, config, log, user, label, cbase, cstore):
+@click.argument('dataset')
+def putresult(task, config, log, dataset, user, label, cbase, cstore):
     """Puts the results in a database. provide task name, config file, the reporting log file.
     optionally can put the model files in a persistent storage. """
     
@@ -242,11 +243,21 @@ def putresult(task, config, log, user, label, cbase, cstore):
     if not os.path.exists(config):
         click.echo(click.style("the config file at {} doesn't exist, provide a valid location".format(config), fg='red'))
         return
+    if not os.path.exists(dataset):
+        click.echo(click.style("the dataset file at {} doesn't exist, provide a valid location".format(config), fg='red'))
+        return
+    config_obj = read_config_file(config)
+    datasets_set = index_by_label(read_config_file(dataset))
+    dataset_key = config_obj['dataset']
+    dataset_key = get_dataset_from_key(dataset_key, datasets_set)
+    config_obj['dataset'] = dataset_key['label']
     ServerManager.get()
-    result = ServerManager.api.put_result(task, to_swagger_experiment(task, config, log, username=user, label=label))
+    result = ServerManager.api.put_result(task, to_swagger_experiment(task, config_obj, log, username=user, label=label))
     if result.response_type == 'success':
         eid = result.message
         click.echo(click.style('results stored with experiment: {}'.format(result.message), fg='green'))
+        if cbase is None:
+            return
         result = store_model(checkpoint_base=cbase, config_sha1=hash_config(read_config_file(config)),
                              checkpoint_store=cstore, print_fn=click.echo)
         if result is not None:
