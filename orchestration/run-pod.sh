@@ -1,6 +1,6 @@
 #!/bin/bash
 
-K=${K:-microk8s.kubectl}
+K=${K:-kubectl}
 
 usage() {
     echo "usage: $0 backend (default mongo) host (default local) port (default 5310)" 1>&2
