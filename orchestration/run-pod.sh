@@ -18,5 +18,5 @@ fi
 
 
 ./build-docker.sh ${BACKEND} ${HOST} ${DOCKER_COMMAND}
-${K} apply -f k8s/"$BACKEND"/ &
+${K} apply -f k8s/"$BACKEND"/
 
