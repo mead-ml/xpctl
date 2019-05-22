@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 usage() {
     echo "Usage: $0
-    [-u|--user|--dbuser <db user> (required)]
-    [--pass|--dbpass <db password> (required)]
+    [-u|--user|--dbuser <db user> (required for overriding database creds existing in the secrets directory)]
+    [--pass|--dbpass <db password> (required for overriding database creds existing in the secrets directory)]
     [--dbhost <db host> (default=localhost)]
     [--dbport <db port> (default=27017)]
     [-b|--backend <backend> (default=mongo)]
@@ -63,15 +63,16 @@ DB_PORT=${DB_PORT:-27017}
 BACK_END=${BACK_END:-mongo}
 PORT=${PORT:-5310}
 
-CON_BUILD=xpctlserver
-docker build \
---network=host \
---build-arg backend=${BACK_END} \
--t ${CON_BUILD}-${BACK_END} \
--f Dockerfile \
-../
+CON_BUILD=xpctl-server
 
 #docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} bash
 
-docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} --backend ${BACK_END} \
+
+if [[ -z DB_USER ]]  # if the database creds are to be overriden run time
+then
+    docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} --backend ${BACK_END} \
 --user ${DB_USER} --passwd ${DB_PASS} --dbhost ${DB_HOST} --dbport ${DB_PORT} --port ${PORT}
+else
+   docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} --backend ${BACK_END} \
+--cred /usr/xpctl/xpctlcred.yaml
+fi

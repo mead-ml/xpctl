@@ -1,0 +1,30 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+    generation: 1
+    labels:
+        app: xpctl-server
+    name: xpctl-server
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: xpctl-server
+    template:
+        metadata:
+            labels:
+                app: xpctl-server
+        spec:
+            containers:
+                - name: xpctl-server-mongo
+                  image: xpctl-server-mongo
+                  imagePullPolicy: Never
+                  command:
+                    - python
+                    - -m
+                    - xpserver
+                  args:
+                      - --backend=mongo
+                      - --cred=./xpctlcred.yaml
+                  ports:
+                      - containerPort: 5310
