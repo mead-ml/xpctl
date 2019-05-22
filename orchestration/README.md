@@ -26,10 +26,10 @@ This will run the `xpctl server` at `<host_name>:5310/v2`. You can change the po
 ./run-pod.sh <database_name> <host_name> <docker_command> 
 ```
 
-All this arguments are optional, the default values are `mongo`, `local` and `docker` respectively. In some ubuntu installation the `docker_command` is going to be `microk8s.docker`.
+All these arguments are optional, the default values are `mongo`, `local` and `docker` respectively. In some ubuntu installation the `docker_command` is going to be `microk8s.docker`.
 
 Do `kubectl describe services xpctl-server`, and look at the line 
-that starts with `NodePort` to get the ip. `xpct-server` services will be available at `<host_name>:<ip>/v2`
+that starts with `NodePort` to get the ip. `xpctl server` services will be available at `<host_name>:<ip>/v2`
 
 ### Running locally
 
