@@ -9,7 +9,7 @@ spec:
     app: xpctl-server
   ports:
     - port: 5310
-      targetPort: 5310
+      nodePort: 31458
   type: NodePort
 status:
   loadBalancer: {}
