@@ -19,4 +19,4 @@ fi
 
 ./build-docker.sh ${BACKEND} ${HOST} ${DOCKER_COMMAND}
 ${K} apply -f k8s/"$BACKEND"/ &
-#${K} port-forward svc/xpctl-server 5310:5310 &
+

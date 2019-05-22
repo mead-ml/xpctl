@@ -18,12 +18,15 @@ Put database credentials in [secrets](secrets) folder. The filename convention i
 ./run-docker.sh
 ```
 
-You can override the database credentials put in the [secrets](secrets) folder. Run `./run-docker.sh --help` to see the options.
+This will run the `xpctl server` at `<host_name>:5310/v2`. You can change the port (5310) and override the database credentials put in the [secrets](secrets) folder. Run `./run-docker.sh --help` to see all options.
 
 ### Using kubernetes
 
 ```
-./run-pod.sh <database_name> <host_name> <port> 
+./run-pod.sh <database_name> <host_name> <docker_command> 
 ```
 
-All this arguments are optional, the default values are 'mongo', 'local' and '5310' respectively. This runs the kubernetes service `xpctl-server` on port 5310 and forwards the system port to it. You can stop this port forward by killing the process itself.
+All this arguments are optional, the default values are `mongo`, `local` and `docker` respectively. In some ubuntu installation the `docker_command` is going to be `microk8s.docker`.
+
+Do `kubectl describe services xpctl-server`, and look at the line 
+that starts with `NodePort` to get the ip. `xpct-server` services will be available at `<host_name>:<ip>/v2`
