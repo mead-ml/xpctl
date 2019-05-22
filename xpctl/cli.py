@@ -233,9 +233,10 @@ def delete(task, eid):
 @click.argument('log')
 @click.argument('dataset')
 def putresult(task, config, log, dataset, user, label, cbase, cstore):
-    """Puts the results in a database. provide task name, config file, the reporting log file.
-    optionally can put the model files in a persistent storage. """
-    
+    """
+    Puts the results in a database. provide task name, config file, the reporting log file, and the dataset file
+    used in the experiment. Optionally can put the model files in a persistent storage.
+    """
     logf = log.format(task)
     if not os.path.exists(logf):
         click.echo(click.style("the log file at {} doesn't exist, provide a valid location".format(logf), fg='red'))
