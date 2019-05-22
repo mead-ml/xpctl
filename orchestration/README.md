@@ -1,8 +1,8 @@
-## building xpctl server container
+## Running xpctl server
 
 ### Prerequisite:
 
-Put database credentials in [secrets](secrets) folder. The filename convention is `xpctlcred-<database_name>-<host_name>.yaml` 
+We assume a database (mongo/postgres) is running somewhere. Put that database credentials in [secrets](secrets) folder. The filename convention is `xpctlcred-<database_name>-<host_name>.yaml` 
 
 
 ### Using docker
@@ -30,3 +30,27 @@ All this arguments are optional, the default values are `mongo`, `local` and `do
 
 Do `kubectl describe services xpctl-server`, and look at the line 
 that starts with `NodePort` to get the ip. `xpct-server` services will be available at `<host_name>:<ip>/v2`
+
+### Running locally
+
+Go to `xpctl` directory, run `python -m xpserver --cred <database_cred_file>`. This `database_cred_file` is the same as the one in the secret. You can pass in the credential values individually as well:
+
+```
+x$ python -m xpserver --help
+usage: __main__.py [-h] [--ll LL] [--backend BACKEND] [--cred CRED]
+                   [--user USER] [--passwd PASSWD] [--dbhost DBHOST]
+                   [--dbport DBPORT] [--port PORT]
+
+xpctl server
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --ll LL            Log level
+  --backend BACKEND  backend
+  --cred CRED        credential for backend
+  --user USER        user for backend
+  --passwd PASSWD    password for backend
+  --dbhost DBHOST    host for backend
+  --dbport DBPORT    port for backend
+  --port PORT        port
+``` 
