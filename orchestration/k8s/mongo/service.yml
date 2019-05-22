@@ -8,9 +8,8 @@ spec:
   selector:
     app: xpctl-server
   ports:
-    - protocol: TCP
-      port: 5310
+    - port: 5310
       targetPort: 5310
-  type: ClusterIP
+  type: NodePort
 status:
   loadBalancer: {}
