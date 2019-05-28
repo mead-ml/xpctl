@@ -20,7 +20,12 @@ class XPCtlReporting(EpochReportingHook):
     def __init__(self, **kwargs):
         super(XPCtlReporting, self).__init__(**kwargs)
         # throw exception if the next three can't be read from kwargs
-        self.api_url = kwargs['host']
+        if 'host' in kwargs:
+            self.api_url = kwargs['host']
+        elif 'cred' in kwargs:
+            self.api_url = read_config_file_or_json(kwargs['cred'])['host']
+        else:
+            raise ValueError('must provide a url where xpctl server is running')
         self.exp_config = read_config_file_or_json(kwargs['config_file'])
         self.task = kwargs['task']
         
