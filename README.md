@@ -2,7 +2,7 @@
 
 `xpctl` is a command-line interface to track experimental results and provide access to a global leaderboard. After running an experiment through `mead`, the results and the logs are committed to a database. Several commands are provided to show the best experimental results under various constraints.
 
-Previously, it was a part of [baseline](https://github.com/dpressel/baseline/docs/xpctl.md).
+Previously, it was a part of [baseline](https://github.com/dpressel/baseline/).
 
 ### Usage
 
