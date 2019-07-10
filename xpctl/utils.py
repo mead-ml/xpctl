@@ -3,6 +3,8 @@ import shutil
 from baseline.utils import unzip_model, read_config_file, write_json, str_file
 import json
 import yaml
+from xpctl.xpclient import Configuration, ApiClient
+from xpctl.xpclient.api import XpctlApi
 from xpctl.xpclient.models import Result, Experiment
 
 
@@ -111,3 +113,9 @@ def write_config_file(content, filepath):
 @str_file(filepath="w")
 def write_yaml(content, filepath):
     yaml.dump(content, filepath, default_flow_style=False)
+
+
+def xpctl_client(host):
+    config = Configuration(host)
+    api_client = ApiClient(config)
+    return XpctlApi(api_client)
