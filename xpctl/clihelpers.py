@@ -31,7 +31,7 @@ def pack_aggregate_result(results, aggregate_fns):
             else:
                 d[result.metric][aggregate_fn] = [score]
 
-    dfs = {metric: pd.DataFrame.from_dict(d[metric]) for metric in metrics}
+    dfs = {metric: pd.DataFrame.from_dict(d[metric])[list(aggregate_fns)] for metric in metrics}
     return pd.concat(dfs.values(), axis=1, keys=dfs.keys())
 
 
