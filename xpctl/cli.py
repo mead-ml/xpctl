@@ -234,7 +234,7 @@ def delete(task, eid):
 @click.argument('dataset')
 def putresult(task, config, log, dataset, user, label, cbase, cstore):
     """
-    Puts the results in a database. provide task name, config file, the reporting log file, and the dataset file
+    Puts the results in a database. provide task name, config file, the reporting log file, and the dataset index file
     used in the experiment. Optionally can put the model files in a persistent storage.
     """
     logf = log.format(task)
@@ -245,7 +245,7 @@ def putresult(task, config, log, dataset, user, label, cbase, cstore):
         click.echo(click.style("the config file at {} doesn't exist, provide a valid location".format(config), fg='red'))
         return
     if not os.path.exists(dataset):
-        click.echo(click.style("the dataset file at {} doesn't exist, provide a valid location".format(config), fg='red'))
+        click.echo(click.style("the dataset file at {} doesn't exist, provide a valid location".format(dataset), fg='red'))
         return
     config_obj = read_config_file(config)
     datasets_set = index_by_label(read_config_file(dataset))
