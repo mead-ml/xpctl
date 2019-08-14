@@ -41,7 +41,7 @@ def read_doc(f_name, new_name=None, fix_fn=fix_links):
 
 def main():
     setup(
-        name=About.NAME,
+        name='mead-{}'.format(About.NAME),
         version=About.VERSION,
         description='Experiment Control and Tracking',
         long_description=read_doc(About.DOC_NAME, "README.md"),
