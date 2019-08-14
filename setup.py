@@ -1,7 +1,7 @@
 import os
 import re
 import shutil
-from setuptools import setup
+from setuptools import setup, find_packages
 from xpctl import __version__
 
 
@@ -50,7 +50,7 @@ def main():
         author_email=About.EMAIL,
         license='Apache 2.0',
         url=About.URL,
-        packages=['xpctl'],
+        packages=find_packages(),
         install_requires=[
             'Click',
             'click-shell',
