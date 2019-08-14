@@ -57,6 +57,12 @@ def main():
             'pandas',
             'xlsxwriter',
             'jsondiff',
+            'pyyaml',
+            'certifi>=14.05.14',
+            'six>=1.10',
+            'python_dateutil>=2.5.3',
+            'setuptools>=21.0.0',
+            'urllib3>=1.15.1',
         ],
         entry_points={
             'console_scripts': [
