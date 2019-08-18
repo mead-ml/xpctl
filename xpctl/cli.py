@@ -134,12 +134,13 @@ def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggrega
 @click.option('--output', help='output file (csv)')
 @click.option('--output_fields', multiple=True, help="which field(s) you want to see in output",
               default=['username', 'eid'])
+@click.option('--labels', multiple=True, help='filter the experiments by certain labels', default=None)
 @click.argument('task')
 @click.argument('sha1')
-def details(task, sha1, user, metric, sort, event_type, n, output, output_fields):
+def details(task, sha1, user, metric, sort, event_type, n, output, output_fields, labels):
     """
     Shows the results for all experiments for a particular config (sha1). Optionally filter out by user(s), metric(s),
-    or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
+    label or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
     to see for other events.
     """
     event_type = EVENT_TYPES[event_type]
@@ -147,7 +148,8 @@ def details(task, sha1, user, metric, sort, event_type, n, output, output_fields
     try:
         result = ServerManager.api.list_experiments_by_prop(task, prop='sha1', value=sha1, user=user, metric=metric,
                                                             sort=sort, event_type=event_type)
-        
+        if labels:
+            result = [r for r in result if r.label in labels]
         prop_name_loc = {k: i for i, k in enumerate(output_fields)}
         result_df = experiment_list_to_df(exps=result, prop_name_loc=prop_name_loc, event_type=event_type)
         if n != -1:
@@ -200,7 +202,7 @@ def lbsummary(task):
 @click.argument('eid')
 @click.argument('label')
 def updatelabel(task, label, eid):
-    """Update the _label_ for an experiment (identified by its id) for a task"""
+    """Update the _label_ for an experiment (identified by its eid) for a task"""
     ServerManager.get()
     result = ServerManager.api.update_property(task, eid, prop='label', value=label)
     if result.response_type == 'success':
@@ -305,6 +307,41 @@ def putmodel(task, eid, cbase, cstore):
         else:
             click.echo(click.style('failed to store model'.format(result), fg='red'))
 
+    except ApiException as e:
+        click.echo(click.style(json.loads(e.body)['detail'], fg='red'))
+
+
+@cli.command()
+@click.option('--user', multiple=True, help="list of users (testuser, root), [multiple]: --user a --user b")
+@click.option('--metric', multiple=True, help="list of metrics (prec, recall, f1, accuracy),[multiple]: --metric f1 "
+                                              "--metric acc")
+@click.option('--sort', help="specify one metric to sort the results", default=None)
+@click.option('--event_type', default='test', help="specify one metric to sort the results")
+@click.option('--n', help='number of experiments', type=int)
+@click.option('--output', help='output file (csv)')
+@click.option('--output_fields', multiple=True, help="which field(s) you want to see in output",
+              default=['username', 'eid'])
+@click.argument('task')
+@click.argument('label')
+def searchlabel(task, label, user, metric, sort, event_type, n, output, output_fields):
+    """
+    Shows the results for all experiments for a particular label. Optionally filter out by user(s), metric(s),
+    or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
+    to see for other events.
+    """
+    event_type = EVENT_TYPES[event_type]
+    ServerManager.get()
+    try:
+        result = ServerManager.api.list_experiments_by_prop(task, prop='label', value=label, user=user, metric=metric,
+                                                            sort=sort, event_type=event_type)
+        prop_name_loc = {k: i for i, k in enumerate(output_fields)}
+        result_df = experiment_list_to_df(exps=result, prop_name_loc=prop_name_loc, event_type=event_type)
+        if n != -1:
+            result_df = result_df.head(n)
+        if output is None:
+            click.echo(result_df)
+        else:
+            result_df.to_csv(output)
     except ApiException as e:
         click.echo(click.style(json.loads(e.body)['detail'], fg='red'))
 
