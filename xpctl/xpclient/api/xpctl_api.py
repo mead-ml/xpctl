@@ -351,19 +351,21 @@ class XpctlApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
-    def get_results_by_prop(self, task, prop, value, **kwargs):  # noqa: E501
+    def get_results_by_prop(self, task, **kwargs):  # noqa: E501
         """Find results by property and value  # noqa: E501
 
         Find results by property and value  # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.get_results_by_prop(task, prop, value, async_req=True)
+        >>> thread = api.get_results_by_prop(task, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
         :param str task: task name (required)
-        :param str prop: property of an experiment dataset, username, label etc (required)
-        :param str value: value of the property. eg: prop=username&value=dpressel (required)
+        :param str eid: eid
+        :param str sha1: sha1
+        :param str dataset: dataset, e.g. SST2
+        :param str label: label
         :param str reduction_dim: which dimension to reduce on, default=sha1
         :param list[str] metric: metric
         :param str sort: metric to sort results on
@@ -375,24 +377,26 @@ class XpctlApi(object):
         """
         kwargs['_return_http_data_only'] = True
         if kwargs.get('async_req'):
-            return self.get_results_by_prop_with_http_info(task, prop, value, **kwargs)  # noqa: E501
+            return self.get_results_by_prop_with_http_info(task, **kwargs)  # noqa: E501
         else:
-            (data) = self.get_results_by_prop_with_http_info(task, prop, value, **kwargs)  # noqa: E501
+            (data) = self.get_results_by_prop_with_http_info(task, **kwargs)  # noqa: E501
             return data
 
-    def get_results_by_prop_with_http_info(self, task, prop, value, **kwargs):  # noqa: E501
+    def get_results_by_prop_with_http_info(self, task, **kwargs):  # noqa: E501
         """Find results by property and value  # noqa: E501
 
         Find results by property and value  # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.get_results_by_prop_with_http_info(task, prop, value, async_req=True)
+        >>> thread = api.get_results_by_prop_with_http_info(task, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
         :param str task: task name (required)
-        :param str prop: property of an experiment dataset, username, label etc (required)
-        :param str value: value of the property. eg: prop=username&value=dpressel (required)
+        :param str eid: eid
+        :param str sha1: sha1
+        :param str dataset: dataset, e.g. SST2
+        :param str label: label
         :param str reduction_dim: which dimension to reduce on, default=sha1
         :param list[str] metric: metric
         :param str sort: metric to sort results on
@@ -403,7 +407,7 @@ class XpctlApi(object):
                  returns the request thread.
         """
 
-        all_params = ['task', 'prop', 'value', 'reduction_dim', 'metric', 'sort', 'numexp_reduction_dim', 'event_type']  # noqa: E501
+        all_params = ['task', 'eid', 'sha1', 'dataset', 'label', 'reduction_dim', 'metric', 'sort', 'numexp_reduction_dim', 'event_type']  # noqa: E501
         all_params.append('async_req')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -422,14 +426,6 @@ class XpctlApi(object):
         if ('task' not in params or
                 params['task'] is None):
             raise ValueError("Missing the required parameter `task` when calling `get_results_by_prop`")  # noqa: E501
-        # verify the required parameter 'prop' is set
-        if ('prop' not in params or
-                params['prop'] is None):
-            raise ValueError("Missing the required parameter `prop` when calling `get_results_by_prop`")  # noqa: E501
-        # verify the required parameter 'value' is set
-        if ('value' not in params or
-                params['value'] is None):
-            raise ValueError("Missing the required parameter `value` when calling `get_results_by_prop`")  # noqa: E501
 
         collection_formats = {}
 
@@ -438,10 +434,14 @@ class XpctlApi(object):
             path_params['task'] = params['task']  # noqa: E501
 
         query_params = []
-        if 'prop' in params:
-            query_params.append(('prop', params['prop']))  # noqa: E501
-        if 'value' in params:
-            query_params.append(('value', params['value']))  # noqa: E501
+        if 'eid' in params:
+            query_params.append(('eid', params['eid']))  # noqa: E501
+        if 'sha1' in params:
+            query_params.append(('sha1', params['sha1']))  # noqa: E501
+        if 'dataset' in params:
+            query_params.append(('dataset', params['dataset']))  # noqa: E501
+        if 'label' in params:
+            query_params.append(('label', params['label']))  # noqa: E501
         if 'reduction_dim' in params:
             query_params.append(('reduction_dim', params['reduction_dim']))  # noqa: E501
         if 'metric' in params:
@@ -494,8 +494,10 @@ class XpctlApi(object):
 
         :param async_req bool
         :param str task: task name (required)
-        :param str prop: property: username, dataset
-        :param str value: value: dpressel, SST2
+        :param str eid: eid
+        :param str sha1: sha1
+        :param str dataset: dataset, e.g. SST2
+        :param str label: label
         :param list[str] user:
         :param list[str] metric:
         :param str sort:
@@ -522,8 +524,10 @@ class XpctlApi(object):
 
         :param async_req bool
         :param str task: task name (required)
-        :param str prop: property: username, dataset
-        :param str value: value: dpressel, SST2
+        :param str eid: eid
+        :param str sha1: sha1
+        :param str dataset: dataset, e.g. SST2
+        :param str label: label
         :param list[str] user:
         :param list[str] metric:
         :param str sort:
@@ -533,7 +537,7 @@ class XpctlApi(object):
                  returns the request thread.
         """
 
-        all_params = ['task', 'prop', 'value', 'user', 'metric', 'sort', 'event_type']  # noqa: E501
+        all_params = ['task', 'eid', 'sha1', 'dataset', 'label', 'user', 'metric', 'sort', 'event_type']  # noqa: E501
         all_params.append('async_req')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -560,10 +564,14 @@ class XpctlApi(object):
             path_params['task'] = params['task']  # noqa: E501
 
         query_params = []
-        if 'prop' in params:
-            query_params.append(('prop', params['prop']))  # noqa: E501
-        if 'value' in params:
-            query_params.append(('value', params['value']))  # noqa: E501
+        if 'eid' in params:
+            query_params.append(('eid', params['eid']))  # noqa: E501
+        if 'sha1' in params:
+            query_params.append(('sha1', params['sha1']))  # noqa: E501
+        if 'dataset' in params:
+            query_params.append(('dataset', params['dataset']))  # noqa: E501
+        if 'label' in params:
+            query_params.append(('label', params['label']))  # noqa: E501
         if 'user' in params:
             query_params.append(('user', params['user']))  # noqa: E501
             collection_formats['user'] = 'csv'  # noqa: E501

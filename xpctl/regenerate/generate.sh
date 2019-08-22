@@ -21,8 +21,8 @@ java -jar ${JAR} generate \
 mv client/xpclient ../
 rm -rf client
 
-cp static/server.py ../xpserver/server.py
-cp static/version.py ../xpserver/version.py
-cp static/setup.py ../xpserver/setup.py
+#cp static/server.py ../xpserver/server.py
+#cp static/version.py ../xpserver/version.py
+#cp static/setup.py ../xpserver/setup.py
 cp static/configuration.py ../xpclient/configuration.py
 

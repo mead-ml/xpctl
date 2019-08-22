@@ -56,8 +56,10 @@ class TestXpctlController(BaseTestCase):
 
         Find results by property and value
         """
-        query_string = [('prop', 'prop_example'),
-                        ('value', 'value_example'),
+        query_string = [('eid', 'eid_example'),
+                        ('sha1', 'sha1_example'),
+                        ('dataset', 'dataset_example'),
+                        ('label', 'label_example'),
                         ('reduction_dim', 'reduction_dim_example'),
                         ('metric', 'metric_example'),
                         ('sort', 'sort_example'),
@@ -75,8 +77,10 @@ class TestXpctlController(BaseTestCase):
 
         list all experiments for this property and value
         """
-        query_string = [('prop', 'prop_example'),
-                        ('value', 'value_example'),
+        query_string = [('eid', 'eid_example'),
+                        ('sha1', 'sha1_example'),
+                        ('dataset', 'dataset_example'),
+                        ('label', 'label_example'),
                         ('user', 'user_example'),
                         ('metric', 'metric_example'),
                         ('sort', 'sort_example'),
