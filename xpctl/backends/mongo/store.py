@@ -150,16 +150,16 @@ class MongoRepo(ExperimentRepo):
             return BackendError(experiments.message)
         return experiments[0]
 
-    def get_results(self, task, prop, value, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
+    def get_results(self, task, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
         metrics = [x for x in listify(metric)]
         if event_type is None or event_type == 'None':
             event_type = 'test_events'
         reduction_dim = reduction_dim if reduction_dim is not None else 'sha1'
         coll = self.db[task]
-        if prop == 'dataset':
-            value = self.get_related_datasets(task, value)
-        d = {prop: value}
-        query = self._update_query({}, **d)
+        if 'dataset' in param_dict.keys():
+            value = self.get_related_datasets(task, param_dict['dataset'])
+            param_dict['dataset'] = value
+        query = self._update_query({}, **param_dict)
         all_results = list(coll.find(query))
         if not all_results:
             return BackendError(message='no information available for [{}]: [{}] in task database [{}]'
@@ -220,19 +220,15 @@ class MongoRepo(ExperimentRepo):
         projection.update({event_type: 1})
         return projection
 
-    def list_results(self, task, prop, value, user, metric, sort, event_type):
+    def list_results(self, task, param_dict, user, metric, sort, event_type):
         if event_type is None or event_type == 'None':
             event_type = 'test_events'
         metrics = [x for x in listify(metric) if x.strip()]
         users = [x for x in listify(user) if x.strip()]
-        if prop is None or prop == 'None':
-            d = {}
-        else:
-            d = {prop: value}
         if users:
-            d.update({'username': users})
+            param_dict.update({'username': users})
         coll = self.db[task]
-        query = self._update_query({}, **d)
+        query = self._update_query({}, **param_dict)
         all_results = list(coll.find(query))
         if not all_results:
             return BackendError(message='no information available for [{}]: [{}] in task database [{}]'
