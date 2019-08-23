@@ -167,7 +167,8 @@ class MongoRepo(ExperimentRepo):
         resultset = mongo_to_experiment_set(task, all_results, event_type=event_type, metrics=metrics)
         if type(resultset) is BackendError:
             return resultset
-        experiment_aggregate_set = aggregate_results(resultset, reduction_dim, event_type, numexp_reduction_dim)
+        experiment_aggregate_set = aggregate_results(resultset, reduction_dim, event_type, numexp_reduction_dim,
+                                                     param_dict)
         if sort is None or sort == 'None':
             return experiment_aggregate_set
         else:
@@ -230,8 +231,8 @@ class MongoRepo(ExperimentRepo):
         query = self._update_query({}, **param_dict)
         all_results = list(coll.find(query))
         if not all_results:
-            return BackendError(message='no information available for [{}]: [{}] in task database [{}]'
-                                .format(prop, value, task))
+            return BackendError(message='no information available for {} in task database [{}]'
+                                .format(param_dict, task))
         experiments = mongo_to_experiment_set(task, all_results, event_type=event_type, metrics=metrics)
         if type(experiments) == BackendError:
             return experiments

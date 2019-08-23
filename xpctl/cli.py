@@ -103,16 +103,22 @@ def experiment(task, eid, event_type, output, metric, sort, output_fields):
 @click.option('--output', help='output file (csv)', default=None)
 @click.option('--aggregate_fn', help='aggregate functions', multiple=True,
               type=click.Choice(['min', 'max', 'avg', 'std']), default=['avg', 'std'])
+@click.option('--label', type=str, help='filter results with a certain label')
 @click.argument('task')
 @click.argument('dataset')
-def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggregate_fn):
+def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggregate_fn, label):
     event_type = EVENT_TYPES[event_type]
     reduction_dim = 'sha1'
     ServerManager.get()
     try:
-        result = ServerManager.api.get_results_by_prop(task, dataset=dataset, reduction_dim=reduction_dim,
-                                                       metric=metric, sort=sort, numexp_reduction_dim=nconfig,
-                                                       event_type=event_type)
+        if label:
+            result = ServerManager.api.get_results_by_prop(task, dataset=dataset, label=label,
+                                                           reduction_dim=reduction_dim, metric=metric, sort=sort,
+                                                           numexp_reduction_dim=nconfig, event_type=event_type)
+        else:
+            result = ServerManager.api.get_results_by_prop(task, dataset=dataset,
+                                                           reduction_dim=reduction_dim, metric=metric, sort=sort,
+                                                           numexp_reduction_dim=nconfig, event_type=event_type)
         result_df = experiment_aggregate_list_to_df(exp_aggs=result, event_type=event_type, aggregate_fns=aggregate_fn)
         if n != -1:
             result_df = result_df.head(n)
@@ -134,10 +140,9 @@ def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggrega
 @click.option('--output', help='output file (csv)')
 @click.option('--output_fields', multiple=True, help="which field(s) you want to see in output",
               default=['username', 'eid'])
-@click.option('--labels', multiple=True, help='filter the experiments by certain labels', default=None)
 @click.argument('task')
 @click.argument('sha1')
-def details(task, sha1, user, metric, sort, event_type, n, output, output_fields, labels):
+def details(task, sha1, user, metric, sort, event_type, n, output, output_fields):
     """
     Shows the results for all experiments for a particular config (sha1). Optionally filter out by user(s), metric(s),
     label or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
@@ -146,10 +151,8 @@ def details(task, sha1, user, metric, sort, event_type, n, output, output_fields
     event_type = EVENT_TYPES[event_type]
     ServerManager.get()
     try:
-        result = ServerManager.api.list_experiments_by_prop(task, prop='sha1', value=sha1, user=user, metric=metric,
+        result = ServerManager.api.list_experiments_by_prop(task, sha1=sha1, user=user, metric=metric,
                                                             sort=sort, event_type=event_type)
-        if labels:
-            result = [r for r in result if r.label in labels]
         prop_name_loc = {k: i for i, k in enumerate(output_fields)}
         result_df = experiment_list_to_df(exps=result, prop_name_loc=prop_name_loc, event_type=event_type)
         if n != -1:
@@ -332,7 +335,7 @@ def searchlabel(task, label, user, metric, sort, event_type, n, output, output_f
     event_type = EVENT_TYPES[event_type]
     ServerManager.get()
     try:
-        result = ServerManager.api.list_experiments_by_prop(task, prop='label', value=label, user=user, metric=metric,
+        result = ServerManager.api.list_experiments_by_prop(task, label=label, user=user, metric=metric,
                                                             sort=sort, event_type=event_type)
         prop_name_loc = {k: i for i, k in enumerate(output_fields)}
         result_df = experiment_list_to_df(exps=result, prop_name_loc=prop_name_loc, event_type=event_type)
