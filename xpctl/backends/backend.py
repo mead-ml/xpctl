@@ -75,7 +75,6 @@ class Experiment(object):
         self.exp_date = exp_date
         self.label = label
         self.dataset = dataset
-        self.exp_date = exp_date
         self.sha1 = sha1
         self.version = version
     
@@ -588,11 +587,11 @@ def client_experiment_to_put_result_consumable(exp):
 
 
 @exporter
-def aggregate_results(resultset, reduction_dim, event_type, num_exps_per_reduction, prop):
+def aggregate_results(resultset, reduction_dim, event_type, num_exps_per_reduction):
     # TODO: implement a trim method for ExperimentGroup
     grouped_result = resultset.groupby(reduction_dim)
     aggregate_fns = {'min': np.min, 'max': np.max, 'avg': np.mean, 'std': np.std}
-    return grouped_result.reduce(aggregate_fns=aggregate_fns, event_type=event_type, prop_name=prop)
+    return grouped_result.reduce(aggregate_fns=aggregate_fns, event_type=event_type)
 
 
 @exporter

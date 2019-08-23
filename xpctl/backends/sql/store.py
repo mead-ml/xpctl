@@ -196,14 +196,15 @@ class SQLRepo(ExperimentRepo):
             return BackendError(message='no experiment with id [{}] for task [{}]'.format(eid, task))
         return self.sql_result_to_data_experiment(exp.one(), event_type, metrics)
     
-    def get_results(self, task, prop, value, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
+    def get_results(self, task, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
         session = self.Session()
         metrics = [x for x in listify(metric) if x.strip()]
         if event_type is None or event_type == 'None':
             event_type = 'test_events'
         reduction_dim = reduction_dim if reduction_dim is not None else 'sha1'
-        if prop == 'dataset':
-            value = self.get_related_datasets(session, task, value)
+        if 'dataset' in param_dict.keys():
+            value = self.get_related_datasets(session, task, param_dict['dataset'])
+            param_dict['dataset'] = value
         if type(value) is list:
             hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)\
                 .filter(getattr(SqlExperiment, prop).in_(value))

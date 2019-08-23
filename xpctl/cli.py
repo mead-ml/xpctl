@@ -110,7 +110,7 @@ def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggrega
     reduction_dim = 'sha1'
     ServerManager.get()
     try:
-        result = ServerManager.api.get_results_by_prop(task, prop='dataset', value=dataset, reduction_dim=reduction_dim,
+        result = ServerManager.api.get_results_by_prop(task, dataset=dataset, reduction_dim=reduction_dim,
                                                        metric=metric, sort=sort, numexp_reduction_dim=nconfig,
                                                        event_type=event_type)
         result_df = experiment_aggregate_list_to_df(exp_aggs=result, event_type=event_type, aggregate_fns=aggregate_fn)
