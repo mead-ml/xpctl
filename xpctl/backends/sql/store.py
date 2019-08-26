@@ -240,7 +240,7 @@ class SQLRepo(ExperimentRepo):
             event_type = 'test_events'
         metrics = [x for x in listify(metric) if x.strip()]
         users = [x for x in listify(user) if x.strip()]
-        if len(param_dict)==0:
+        if not param_dict:
             hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)
         else:
             hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)

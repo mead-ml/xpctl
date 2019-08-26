@@ -71,6 +71,13 @@ def main():
         },
         extras_require={
             'test': [],
+            'mongo': [
+                'pymongo',
+            ],
+            'sql': [
+                'sqlalchemy', 
+                'psycopg2',
+            ]
         },
         classifiers={
             'Development Status :: 2 - Pre-Alpha',
