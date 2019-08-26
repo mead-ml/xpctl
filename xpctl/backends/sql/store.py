@@ -221,7 +221,7 @@ class SQLRepo(ExperimentRepo):
             else:
                 data_experiments.append(data_experiment)
         experiment_aggregate_set = self.aggregate_sql_results(data_experiments, reduction_dim, event_type,
-                                                              numexp_reduction_dim, prop_dict)
+                                                              numexp_reduction_dim, param_dict)
         if sort is None or sort == 'None':
             return experiment_aggregate_set
         else:
