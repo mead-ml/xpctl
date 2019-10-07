@@ -196,23 +196,23 @@ class SQLRepo(ExperimentRepo):
             return BackendError(message='no experiment with id [{}] for task [{}]'.format(eid, task))
         return self.sql_result_to_data_experiment(exp.one(), event_type, metrics)
     
-    def get_results(self, task, prop, value, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
+    def get_results(self, task, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
         session = self.Session()
         metrics = [x for x in listify(metric) if x.strip()]
         if event_type is None or event_type == 'None':
             event_type = 'test_events'
         reduction_dim = reduction_dim if reduction_dim is not None else 'sha1'
-        if prop == 'dataset':
-            value = self.get_related_datasets(session, task, value)
-        if type(value) is list:
-            hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)\
-                .filter(getattr(SqlExperiment, prop).in_(value))
-        else:
-            hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)\
-                .filter(getattr(SqlExperiment, prop) == value)
+        if 'dataset' in param_dict.keys():
+            param_dict['dataset'] = self.get_related_datasets(session, task, param_dict['dataset'])
+        hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)
+        for prop, value in param_dict.items():
+            if type(value) is list:
+                hits = hits.filter(getattr(SqlExperiment, prop).in_(value))
+            else:
+                hits = hits.filter(getattr(SqlExperiment, prop) == value)
         if hits is None or not hits.first():
-            return BackendError(message='no information available for [{}]: [{}] in task database [{}]'
-                                .format(prop, value, task))
+            return BackendError(message='no information available for {} in task database [{}]'
+                                .format(param_dict, task))
         data_experiments = []
         for exp in hits:
             data_experiment = self.sql_result_to_data_experiment(exp, event_type, metrics)
@@ -221,7 +221,7 @@ class SQLRepo(ExperimentRepo):
             else:
                 data_experiments.append(data_experiment)
         experiment_aggregate_set = self.aggregate_sql_results(data_experiments, reduction_dim, event_type,
-                                                              numexp_reduction_dim, prop)
+                                                              numexp_reduction_dim, param_dict)
         if sort is None or sort == 'None':
             return experiment_aggregate_set
         else:
@@ -233,22 +233,23 @@ class SQLRepo(ExperimentRepo):
             else:
                 return BackendError(message='experiments can only be sorted when event_type=test_events')
          
-    def list_results(self, task, prop, value, user, metric, sort, event_type):
+    def list_results(self, task, param_dict, user, metric, sort, event_type):
         session = self.Session()
         data_experiments = []
         if event_type is None or event_type == 'None':
             event_type = 'test_events'
         metrics = [x for x in listify(metric) if x.strip()]
         users = [x for x in listify(user) if x.strip()]
-        if prop is None or prop == 'None':
+        if not param_dict:
             hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)
         else:
-            hits = session.query(SqlExperiment).filter(getattr(SqlExperiment, prop) == value). \
-                   filter(SqlExperiment.task == task)
+            hits = session.query(SqlExperiment).filter(SqlExperiment.task == task)
+            for prop, value in param_dict.items():
+                hits = hits.filter(getattr(SqlExperiment, prop) == value)
         if users:
             hits = hits.filter(SqlExperiment.username.in_(users))
         if hits.first() is None:
-            return BackendError('No results in {} database for {} = {}'.format(task, prop, value))
+            return BackendError('No results in {} database for {}'.format(task, param_dict))
         for exp in hits:
             data_experiment = self.sql_result_to_data_experiment(exp, event_type, metrics)
             if type(data_experiment) is BackendError:
@@ -382,9 +383,9 @@ class SQLRepo(ExperimentRepo):
                     datasets.append(d)
             return datasets
 
-    def aggregate_sql_results(self, data_experiments, reduction_dim, event_type, numexp_reduction_dim, prop):
+    def aggregate_sql_results(self, data_experiments, reduction_dim, event_type, numexp_reduction_dim, prop_dict):
         experiment_set = self.get_data_experiment_set(data_experiments)
-        return aggregate_results(experiment_set, reduction_dim, event_type, numexp_reduction_dim, prop=prop)
+        return aggregate_results(experiment_set, reduction_dim, event_type, numexp_reduction_dim, prop_dict=prop_dict)
 
     def sql_result_to_data_experiment(self, exp, event_type, metrics_from_user):
         _exp = Experiment(

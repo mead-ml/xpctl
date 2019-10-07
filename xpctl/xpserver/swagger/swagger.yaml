@@ -1,6 +1,8 @@
+---
 swagger: "2.0"
 info:
-  description: "This is a sample xpctl  server.  You can find out more about xpctl at [baseline](https://github.com/dpressel/baseline/blob/master/docs/xpctl.md)."
+  description: "This is a sample xpctl  server.  You can find out more about xpctl\
+    \ at [baseline](https://github.com/dpressel/baseline/blob/master/docs/xpctl.md)."
   version: "1.0.0"
   title: "xpctl"
   termsOfService: "http://swagger.io/terms/"
@@ -35,24 +37,24 @@ paths:
       parameters:
       - name: "task"
         in: "path"
-        type: "string"
         description: ""
         required: true
-      - name: "experiment"
-        in: "body"
+        type: "string"
+      - in: "body"
+        name: "experiment"
+        required: true
         schema:
           $ref: "#/definitions/Experiment"
-        required: True
       - name: "user"
         in: "query"
-        type: "string"
         description: ""
         required: false
+        type: "string"
       - name: "label"
         in: "query"
-        type: "string"
         description: ""
         required: false
+        type: "string"
       responses:
         200:
           description: "success"
@@ -63,7 +65,6 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
   /update/{task}/{eid}/:
     get:
       tags:
@@ -78,24 +79,24 @@ paths:
       parameters:
       - name: "task"
         in: "path"
-        type: "string"
         description: ""
         required: true
+        type: "string"
       - name: "eid"
         in: "path"
-        type: "string"
         description: ""
         required: true
+        type: "string"
       - name: "prop"
         in: "query"
-        type: "string"
         description: ""
         required: true
+        type: "string"
       - name: "value"
         in: "query"
-        type: "string"
         description: ""
         required: true
+        type: "string"
       responses:
         200:
           description: "success"
@@ -106,7 +107,6 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
   /delete/{task}/{eid}:
     get:
       tags:
@@ -121,14 +121,14 @@ paths:
       parameters:
       - name: "task"
         in: "path"
-        type: "string"
         description: ""
         required: true
+        type: "string"
       - name: "eid"
         in: "path"
-        type: "string"
         description: ""
         required: true
+        type: "string"
       responses:
         200:
           description: "success"
@@ -139,61 +139,76 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
   /find/{task}:
-      get:
-        tags:
-        - "xpctl"
-        summary: "list all experiments for this property and value"
-        description: "list all experiments for this property (sha1/ username) and value (1cd21df91770b4dbed64a683558b062e3dee61f0/ dpressel)"
-        operationId: "list_experiments_by_prop"
-        produces:
-        - "application/json"
-        parameters:
-        - name: "task"
-          in: "path"
-          description: "task name"
-          required: true
+    get:
+      tags:
+      - "xpctl"
+      summary: "list all experiments for this property and value"
+      description: "list all experiments for this property (sha1/ username) and value\
+        \ (1cd21df91770b4dbed64a683558b062e3dee61f0/ dpressel)"
+      operationId: "list_experiments_by_prop"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "task"
+        in: "path"
+        description: "task name"
+        required: true
+        type: "string"
+      - name: "eid"
+        in: "query"
+        description: "eid"
+        required: false
+        type: "string"
+      - name: "sha1"
+        in: "query"
+        description: "sha1"
+        required: false
+        type: "string"
+      - name: "dataset"
+        in: "query"
+        description: "dataset, e.g. SST2"
+        required: false
+        type: "string"
+      - name: "label"
+        in: "query"
+        description: "label"
+        required: false
+        type: "string"
+      - name: "user"
+        in: "query"
+        required: false
+        type: "array"
+        items:
           type: "string"
-        - name: "prop"
-          in: "query"
-          description: "property: username, dataset"
+      - name: "metric"
+        in: "query"
+        required: false
+        type: "array"
+        items:
           type: "string"
-        - name: "value"
-          in: "query"
-          description: "value: dpressel, SST2"
-          type: "string"
-        - name: "user"
-          in: "query"
-          type: "array"
-          items:
-            type: "string"
-        - name: "metric"
-          in: "query"
-          type: "array"
-          items:
-            type: "string"
-        - name: "sort"
-          in: "query"
-          type: "string"
-        - name: "event_type"
-          in: "query"
-          type: "string"
-        responses:
-          200:
-            description: "successful operation"
-            schema:
-              type: "array"
-              items:
-                $ref: "#/definitions/Experiment"
-          400:
-            description: "Invalid status value"
-          default:
-            description: "unexpected error"
-            schema:
-              $ref: "#/definitions/Response"
-        x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
+      - name: "sort"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "event_type"
+        in: "query"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Experiment"
+        400:
+          description: "Invalid status value"
+        default:
+          description: "unexpected error"
+          schema:
+            $ref: "#/definitions/Response"
+      x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
   /results/{task}:
     get:
       tags:
@@ -209,43 +224,58 @@ paths:
         description: "task name"
         required: true
         type: "string"
-      - name: "prop"
+      - name: "eid"
         in: "query"
-        description: "property of an experiment dataset, username, label etc"
-        required: true
+        description: "eid"
+        required: false
         type: "string"
-      - name: "value"
+      - name: "sha1"
         in: "query"
-        description: "value of the property. eg: prop=username&value=dpressel"
+        description: "sha1"
+        required: false
         type: "string"
-        required: true
+      - name: "dataset"
+        in: "query"
+        description: "dataset, e.g. SST2"
+        required: false
+        type: "string"
+      - name: "label"
+        in: "query"
+        description: "label"
+        required: false
+        type: "string"
       - name: "reduction_dim"
         in: "query"
-        type: "string"
         description: "which dimension to reduce on, default=sha1"
+        required: false
+        type: "string"
       - name: "metric"
         in: "query"
+        description: "metric"
+        required: false
         type: "array"
         items:
           type: "string"
-        description: "metric"
       - name: "sort"
         in: "query"
-        type: "string"
         description: "metric to sort results on"
+        required: false
+        type: "string"
       - name: "numexp_reduction_dim"
         in: "query"
-        type: "integer"
         description: "max number of experiments in an aggregate group"
+        required: false
+        type: "integer"
       - name: "event_type"
         in: "query"
-        type: "string"
         description: "train/dev/test"
+        required: false
+        type: "string"
       responses:
         200:
           description: "successful operation"
           schema:
-            type: array
+            type: "array"
             items:
               $ref: "#/definitions/ExperimentAggregate"
         400:
@@ -257,7 +287,6 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
   /{task}/{eid}:
     get:
       tags:
@@ -294,7 +323,7 @@ paths:
         200:
           description: "successful operation"
           schema:
-           $ref: "#/definitions/Experiment"
+            $ref: "#/definitions/Experiment"
         400:
           description: "Invalid ID supplied"
         404:
@@ -304,133 +333,129 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
   /config2json/{task}/{sha1}:
-      get:
-        tags:
-        - "xpctl"
-        summary: "get config for sha1"
-        description: "config for sha1"
-        operationId: "config2json"
-        produces:
-        - "application/json"
-        parameters:
-        - name: "task"
-          in: "path"
-          description: "task"
-          required: true
-          type: "string"
-        - name: "sha1"
-          in: "path"
-          description: "sha1"
-          required: true
-          type: "string"
-        responses:
-          200:
-            description: "successful operation"
-            schema:
-              type: "object"
-          400:
-            description: "Invalid ID supplied"
-          404:
-            description: "Experiment not found"
-          default:
-            description: "unexpected error"
-            schema:
-              $ref: "#/definitions/Response"
-        x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
+    get:
+      tags:
+      - "xpctl"
+      summary: "get config for sha1"
+      description: "config for sha1"
+      operationId: "config2json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "task"
+        in: "path"
+        description: "task"
+        required: true
+        type: "string"
+      - name: "sha1"
+        in: "path"
+        description: "sha1"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Experiment not found"
+        default:
+          description: "unexpected error"
+          schema:
+            $ref: "#/definitions/Response"
+      x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
   /getmodelloc/{task}/{eid}:
-        get:
-          tags:
-          - "xpctl"
-          summary: "get model loc for experiment"
-          description: "get model loc for experiment"
-          operationId: "get_model_location"
-          produces:
-          - "application/json"
-          parameters:
-          - name: "task"
-            in: "path"
-            description: "task"
-            required: true
-            type: "string"
-          - name: "eid"
-            in: "path"
-            description: "experiment id"
-            required: true
-            type: "string"
-          responses:
-            200:
-              description: "successful operation"
-              schema:
-                $ref: "#/definitions/Response"
-            400:
-              description: "Invalid ID supplied"
-            404:
-              description: "Experiment not found"
-            default:
-              description: "unexpected error"
-              schema:
-                $ref: "#/definitions/Response"
-          x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
+    get:
+      tags:
+      - "xpctl"
+      summary: "get model loc for experiment"
+      description: "get model loc for experiment"
+      operationId: "get_model_location"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "task"
+        in: "path"
+        description: "task"
+        required: true
+        type: "string"
+      - name: "eid"
+        in: "path"
+        description: "experiment id"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Response"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Experiment not found"
+        default:
+          description: "unexpected error"
+          schema:
+            $ref: "#/definitions/Response"
+      x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
   /summary/:
-        get:
-          tags:
-          - "xpctl"
-          summary: "get summary for task"
-          description: "summary for task"
-          operationId: "summary"
-          produces:
-          - "application/json"
-          responses:
-            200:
-              description: "successful operation"
-              schema:
-                type: "array"
-                items:
-                 $ref: "#/definitions/TaskSummary"
-            400:
-              description: "Invalid ID supplied"
-            404:
-              description: "Experiment not found"
-            default:
-              description: "unexpected error"
-              schema:
-                $ref: "#/definitions/Response"
-          x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
+    get:
+      tags:
+      - "xpctl"
+      summary: "get summary for task"
+      description: "summary for task"
+      operationId: "summary"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/TaskSummary"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Experiment not found"
+        default:
+          description: "unexpected error"
+          schema:
+            $ref: "#/definitions/Response"
+      x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
   /summary/{task}/:
-          get:
-            tags:
-            - "xpctl"
-            summary: "get summary for task"
-            description: "summary for task"
-            operationId: "task_summary"
-            produces:
-            - "application/json"
-            parameters:
-            - name: "task"
-              in: "path"
-              description: "task"
-              required: true
-              type: "string"
-            responses:
-              200:
-                description: "successful operation"
-                schema:
-                  $ref: "#/definitions/TaskSummary"
-              400:
-                description: "Invalid ID supplied"
-              404:
-                description: "Experiment not found"
-              default:
-                description: "unexpected error"
-                schema:
-                  $ref: "#/definitions/Response"
-            x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-
+    get:
+      tags:
+      - "xpctl"
+      summary: "get summary for task"
+      description: "summary for task"
+      operationId: "task_summary"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "task"
+        in: "path"
+        description: "task"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/TaskSummary"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Experiment not found"
+        default:
+          description: "unexpected error"
+          schema:
+            $ref: "#/definitions/Response"
+      x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 securityDefinitions:
   xpctl_auth:
     type: "oauth2"
@@ -443,17 +468,15 @@ securityDefinitions:
     type: "apiKey"
     name: "api_key"
     in: "header"
-
 definitions:
-
   Result:
     type: "object"
     required:
     - "metric"
-    - "value"
-    - "tick_type"
-    - "tick"
     - "phase"
+    - "tick"
+    - "tick_type"
+    - "value"
     properties:
       metric:
         type: "string"
@@ -470,7 +493,12 @@ definitions:
         example: 1
       phase:
         type: "string"
-        
+    example:
+      phase: "phase"
+      tick_type: "tick_type"
+      metric: "f1"
+      tick: 1
+      value: 0.365897
   AggregateResult:
     type: "object"
     required:
@@ -482,15 +510,15 @@ definitions:
         example: "f1"
       values:
         type: "array"
-        items: 
-          type: "object"
-          properties:
-            aggregate_fn:
-             type: "string"
-            score:
-             type: "number"
-             format: "float32"
-          
+        items:
+          $ref: "#/definitions/AggregateResult_values"
+    example:
+      metric: "f1"
+      values:
+      - score: 0.80082819046101150206595775671303272247314453125
+        aggregate_fn: "aggregate_fn"
+      - score: 0.80082819046101150206595775671303272247314453125
+        aggregate_fn: "aggregate_fn"
   Experiment:
     type: "object"
     properties:
@@ -520,7 +548,7 @@ definitions:
         example: "2019-05-02T23:29:46.578675"
       label:
         type: "string"
-        example: "label"  
+        example: "label"
       version:
         type: "string"
         example: "1.4.1"
@@ -536,7 +564,50 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Result"
-  
+    example:
+      eid: "5b074775b5536c4bc124d95f"
+      train_events:
+      - phase: "phase"
+        tick_type: "tick_type"
+        metric: "f1"
+        tick: 1
+        value: 0.365897
+      - phase: "phase"
+        tick_type: "tick_type"
+        metric: "f1"
+        tick: 1
+        value: 0.365897
+      label: "label"
+      version: "1.4.1"
+      sha1: "8ab6ab6ee8fdf14b111223e2edf48750c30c7e51"
+      hostname: "somehost"
+      task: "classify"
+      valid_events:
+      - phase: "phase"
+        tick_type: "tick_type"
+        metric: "f1"
+        tick: 1
+        value: 0.365897
+      - phase: "phase"
+        tick_type: "tick_type"
+        metric: "f1"
+        tick: 1
+        value: 0.365897
+      exp_date: "2019-05-02T23:29:46.578675"
+      config: "{dataset: sst2}"
+      dataset: "SST2"
+      test_events:
+      - phase: "phase"
+        tick_type: "tick_type"
+        metric: "f1"
+        tick: 1
+        value: 0.365897
+      - phase: "phase"
+        tick_type: "tick_type"
+        metric: "f1"
+        tick: 1
+        value: 0.365897
+      username: "someone"
   ExperimentAggregate:
     type: "object"
     properties:
@@ -563,11 +634,11 @@ definitions:
         example: "somehost"
       exp_date:
         type: "string"
-        example: "2019-05-02T23:29:46.578675"
         format: "date"
+        example: "2019-05-02T23:29:46.578675"
       label:
         type: "string"
-        example: "label"  
+        example: "label"
       version:
         type: "string"
         example: "1.4.1"
@@ -587,18 +658,71 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/AggregateResult"
-
+    example:
+      eid: "5b074775b5536c4bc124d95f"
+      train_events:
+      - metric: "f1"
+        values:
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+      - metric: "f1"
+        values:
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+      num_exps: 1
+      label: "label"
+      version: "1.4.1"
+      sha1: "8ab6ab6ee8fdf14b111223e2edf48750c30c7e51"
+      hostname: "somehost"
+      task: "classify"
+      valid_events:
+      - metric: "f1"
+        values:
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+      - metric: "f1"
+        values:
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+      exp_date: "2019-05-02T23:29:46.578675"
+      config: "{dataset: sst2}"
+      dataset: "SST2"
+      test_events:
+      - metric: "f1"
+        values:
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+      - metric: "f1"
+        values:
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+        - score: 0.80082819046101150206595775671303272247314453125
+          aggregate_fn: "aggregate_fn"
+      username: "someone"
   TaskSummary:
     type: "object"
     required:
-    - "task"
     - "summary"
+    - "task"
     properties:
       task:
         type: "string"
       summary:
         type: "object"
-
+        properties: {}
+    example:
+      summary: "{}"
+      task: "task"
   Response:
     type: "object"
     required:
@@ -613,9 +737,23 @@ definitions:
         type: "string"
       response_type:
         type: "string"
-        enum: ["success", "error"]
-
-
+        enum:
+        - "success"
+        - "error"
+    example:
+      code: 0
+      response_type: "success"
+      message: "message"
+  AggregateResult_values:
+    properties:
+      aggregate_fn:
+        type: "string"
+      score:
+        type: "number"
+        format: "float32"
+    example:
+      score: 0.80082819046101150206595775671303272247314453125
+      aggregate_fn: "aggregate_fn"
 externalDocs:
   description: "Find out more about Swagger"
   url: "http://swagger.io"

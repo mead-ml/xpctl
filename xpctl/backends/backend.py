@@ -75,7 +75,6 @@ class Experiment(object):
         self.exp_date = exp_date
         self.label = label
         self.dataset = dataset
-        self.exp_date = exp_date
         self.sha1 = sha1
         self.version = version
     
@@ -184,14 +183,18 @@ class ExperimentGroup(object):
     def __len__(self):
         return len(self.grouped_experiments.keys())
     
-    def reduce(self, aggregate_fns, event_type=TEST_EVENT, prop_name='dataset'):
-        """ aggregate results across a result group"""
+    def reduce(self, aggregate_fns, event_type=TEST_EVENT, prop_dict={}):
+        """ aggregate results across a result group
+        :param aggregate_fns: aggregating functions
+        :param event_type: train/valid/test event
+        :param prop_dict: Experiments in this group are expected to share some properties (since they are typically a
+        query results from the database. This dict stores the shared properties and their values. The
+        ExperimentAggregate created by the this reduce function will be labeld by these properties and values.
+        """
         data = {}
         num_experiments = {}
-        prop_values = {}
         for reduction_dim_value, experiments in self.grouped_experiments.items():
             num_experiments[reduction_dim_value] = len(experiments)
-            prop_values[reduction_dim_value] = experiments[0].get_prop(prop_name)
             data[reduction_dim_value] = {}
             for experiment in experiments:
                 results = experiment.get_prop(event_type)
@@ -218,7 +221,7 @@ class ExperimentGroup(object):
             d = {
                 self.reduction_dim: reduction_dim_value,
                 'num_exps': num_experiments[reduction_dim_value],
-                prop_name: prop_values[reduction_dim_value]
+                **prop_dict
             }
             agr = deepcopy(ExperimentAggregate(task=self.task, **d))
             for metric in data[reduction_dim_value]:
@@ -588,11 +591,13 @@ def client_experiment_to_put_result_consumable(exp):
 
 
 @exporter
-def aggregate_results(resultset, reduction_dim, event_type, num_exps_per_reduction, prop):
+def aggregate_results(resultset, reduction_dim, event_type, num_exps_per_reduction, prop_dict):
     # TODO: implement a trim method for ExperimentGroup
+    # The resultset here is a query result from prop_dict as the filtering parameters, so these results should share
+    # the parameters in prop_dict
     grouped_result = resultset.groupby(reduction_dim)
     aggregate_fns = {'min': np.min, 'max': np.max, 'avg': np.mean, 'std': np.std}
-    return grouped_result.reduce(aggregate_fns=aggregate_fns, event_type=event_type, prop_name=prop)
+    return grouped_result.reduce(aggregate_fns=aggregate_fns, event_type=event_type, prop_dict=prop_dict)
 
 
 @exporter

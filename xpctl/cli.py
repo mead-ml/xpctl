@@ -103,16 +103,22 @@ def experiment(task, eid, event_type, output, metric, sort, output_fields):
 @click.option('--output', help='output file (csv)', default=None)
 @click.option('--aggregate_fn', help='aggregate functions', multiple=True,
               type=click.Choice(['min', 'max', 'avg', 'std']), default=['avg', 'std'])
+@click.option('--label', type=str, help='filter results with a certain label')
 @click.argument('task')
 @click.argument('dataset')
-def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggregate_fn):
+def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggregate_fn, label):
     event_type = EVENT_TYPES[event_type]
     reduction_dim = 'sha1'
     ServerManager.get()
     try:
-        result = ServerManager.api.get_results_by_prop(task, prop='dataset', value=dataset, reduction_dim=reduction_dim,
-                                                       metric=metric, sort=sort, numexp_reduction_dim=nconfig,
-                                                       event_type=event_type)
+        if label:
+            result = ServerManager.api.get_results_by_prop(task, dataset=dataset, label=label,
+                                                           reduction_dim=reduction_dim, metric=metric, sort=sort,
+                                                           numexp_reduction_dim=nconfig, event_type=event_type)
+        else:
+            result = ServerManager.api.get_results_by_prop(task, dataset=dataset,
+                                                           reduction_dim=reduction_dim, metric=metric, sort=sort,
+                                                           numexp_reduction_dim=nconfig, event_type=event_type)
         result_df = experiment_aggregate_list_to_df(exp_aggs=result, event_type=event_type, aggregate_fns=aggregate_fn)
         if n != -1:
             result_df = result_df.head(n)
@@ -139,15 +145,14 @@ def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggrega
 def details(task, sha1, user, metric, sort, event_type, n, output, output_fields):
     """
     Shows the results for all experiments for a particular config (sha1). Optionally filter out by user(s), metric(s),
-    or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
+    label or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
     to see for other events.
     """
     event_type = EVENT_TYPES[event_type]
     ServerManager.get()
     try:
-        result = ServerManager.api.list_experiments_by_prop(task, prop='sha1', value=sha1, user=user, metric=metric,
+        result = ServerManager.api.list_experiments_by_prop(task, sha1=sha1, user=user, metric=metric,
                                                             sort=sort, event_type=event_type)
-        
         prop_name_loc = {k: i for i, k in enumerate(output_fields)}
         result_df = experiment_list_to_df(exps=result, prop_name_loc=prop_name_loc, event_type=event_type)
         if n != -1:
@@ -200,7 +205,7 @@ def lbsummary(task):
 @click.argument('eid')
 @click.argument('label')
 def updatelabel(task, label, eid):
-    """Update the _label_ for an experiment (identified by its id) for a task"""
+    """Update the _label_ for an experiment (identified by its eid) for a task"""
     ServerManager.get()
     result = ServerManager.api.update_property(task, eid, prop='label', value=label)
     if result.response_type == 'success':
@@ -305,6 +310,41 @@ def putmodel(task, eid, cbase, cstore):
         else:
             click.echo(click.style('failed to store model'.format(result), fg='red'))
 
+    except ApiException as e:
+        click.echo(click.style(json.loads(e.body)['detail'], fg='red'))
+
+
+@cli.command()
+@click.option('--user', multiple=True, help="list of users (testuser, root), [multiple]: --user a --user b")
+@click.option('--metric', multiple=True, help="list of metrics (prec, recall, f1, accuracy),[multiple]: --metric f1 "
+                                              "--metric acc")
+@click.option('--sort', help="specify one metric to sort the results", default=None)
+@click.option('--event_type', default='test', help="specify one metric to sort the results")
+@click.option('--n', help='number of experiments', type=int)
+@click.option('--output', help='output file (csv)')
+@click.option('--output_fields', multiple=True, help="which field(s) you want to see in output",
+              default=['username', 'eid'])
+@click.argument('task')
+@click.argument('label')
+def searchlabel(task, label, user, metric, sort, event_type, n, output, output_fields):
+    """
+    Shows the results for all experiments for a particular label. Optionally filter out by user(s), metric(s),
+    or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
+    to see for other events.
+    """
+    event_type = EVENT_TYPES[event_type]
+    ServerManager.get()
+    try:
+        result = ServerManager.api.list_experiments_by_prop(task, label=label, user=user, metric=metric,
+                                                            sort=sort, event_type=event_type)
+        prop_name_loc = {k: i for i, k in enumerate(output_fields)}
+        result_df = experiment_list_to_df(exps=result, prop_name_loc=prop_name_loc, event_type=event_type)
+        if n != -1:
+            result_df = result_df.head(n)
+        if output is None:
+            click.echo(result_df)
+        else:
+            result_df.to_csv(output)
     except ApiException as e:
         click.echo(click.style(json.loads(e.body)['detail'], fg='red'))
 

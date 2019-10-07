@@ -36,7 +36,7 @@ case $key in
     shift
     ;;
     -b|--backend)
-    BACKEND="$2"
+    BACK_END="$2"
     shift
     shift
     ;;
@@ -68,7 +68,7 @@ CON_BUILD=xpctl-server
 #docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} bash
 
 
-if [[ -z DB_USER ]]  # if the database creds are to be overriden run time
+if [ -n "$DB_USER" ]  # if the database creds are to be overriden run time
 then
     docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} --backend ${BACK_END} \
 --user ${DB_USER} --passwd ${DB_PASS} --dbhost ${DB_HOST} --dbport ${DB_PORT} --port ${PORT}

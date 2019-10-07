@@ -71,11 +71,10 @@ class ExperimentRepo(object):
         """
         pass
         
-    def get_results(self, task, prop, value, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
+    def get_results(self, task, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
         """Get results from the database
         :param task: (``str``) The taskname
-        :param prop: (``str``) Filter the experiments by a property(eg: 'dataset')
-        :param value: (``str``) The value for the property (eg: 'SST2')
+        :param param_dict: (``dict``) The dict of parameters for query
         :param reduction_dim: (``str``) The property on which the results will be reduced
         :param metric: (``str``) The metric(s) to use
         :param sort: (``str``) The field to sort on
@@ -137,11 +136,10 @@ class ExperimentRepo(object):
         """
         pass
 
-    def list_results(self, task, prop, value, user, metric, sort, event_type):
+    def list_results(self, task, param_dict, user, metric, sort, event_type):
         """Get results from the database
         :param task: (``str``) The taskname
-        :param prop: (``str``) List the experiments by a property(eg: 'dataset')
-        :param value: (``str``) The value for the property (eg: 'SST2')
+        :param param_dict: (``dict``) The dict of parameters for query
         :param user: List[``str``)] filter by users
         :param metric: (``str``) The metric(s) to use
         :param sort: (``str``) The field to sort on
