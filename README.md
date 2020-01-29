@@ -34,16 +34,3 @@ If you already had `xpctl` installed from `baseline` do the following before ins
 -  remove/rename `baseline/python/xpctl`
 -  remove `xpctl.egg-info` from `baseline/python/`
 
-If you are a contributor to `baseline`, you would need to `untrack` the `xpctl` files. That can be done running the following commands at your `baseline` installation.
-
-```
-git update-index --skip-worktree python/xpctl/cli.py
-git update-index --skip-worktree python/xpctl/core.py
-git update-index --skip-worktree python/xpctl/helpers.py
-git update-index --skip-worktree python/xpctl/__init__.py
-git update-index --skip-worktree python/xpctl/version.py
-git update-index --skip-worktree python/xpctl/mongo/backend.py
-git update-index --skip-worktree python/xpctl/mongo/__init__.py
-git update-index --skip-worktree python/xpctl/sql/backend.py
-git update-index --skip-worktree python/xpctl/sql/__init__.py```
-``` 
