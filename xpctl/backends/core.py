@@ -1,8 +1,5 @@
 from __future__ import print_function
-from baseline.utils import export
 
-__all__ = []
-exporter = export(__all__)
 
 EVENT_TYPES = {
     "train": "train_events", "Train": "train_events",
@@ -12,7 +9,6 @@ EVENT_TYPES = {
 }
 
 
-@exporter
 class ExperimentRepo(object):
 
     def __init__(self):
@@ -70,7 +66,7 @@ class ExperimentRepo(object):
         :return: xpctl.backend.data.Experiment object
         """
         pass
-        
+
     def get_results(self, task, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
         """Get results from the database
         :param task: (``str``) The taskname
@@ -107,7 +103,7 @@ class ExperimentRepo(object):
         :return: List[xpctl.backend.data.Experiment]
         """
         pass
-    
+
     def update_prop(self, task, eid, prop, value):
         """
         Update a property(label, username etc) for an experiment
@@ -157,13 +153,13 @@ class ExperimentRepo(object):
              - <id>-reporting.log
              - <id>-config.yml
              - <id>-meta.yml (any meta info such as label, username etc.)
-        
+
         :param zipfile: zip file location for the dump. defaults to xpctldump-datetimestamp.zip
         :param task_eids: a dictionary of the form {'task': [eid1, eid2]}, if you want to dump specific files.
         :return: the path to the dumped file
         """
         pass
-    
+
     def restore(self, dump):
         """
         restore a database from the dump. be careful: the experiment ids will change.
