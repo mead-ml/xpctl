@@ -4,7 +4,7 @@ import pymongo
 import datetime
 import socket
 import getpass
-from baseline.utils import export, listify, unzip_files, read_config_file
+from baseline.utils import listify, unzip_files, read_config_file
 from mead.utils import hash_config
 from xpctl.backends.core import ExperimentRepo
 from xpctl.backends.backend import TaskDatasetSummary, TaskDatasetSummarySet, BackendSuccess, BackendError, Experiment, ExperimentSet, Result, \
@@ -15,11 +15,6 @@ from baseline.version import __version__
 import logging
 
 
-__all__ = []
-exporter = export(__all__)
-
-
-@exporter
 class MongoRepo(ExperimentRepo):
 
     def __init__(self, dbhost, dbport, user, passwd):
@@ -51,7 +46,7 @@ class MongoRepo(ExperimentRepo):
         unpacked = client_experiment_to_put_result_consumable(exp)
         return self._put_result(task=task, config_obj=unpacked.config_obj, events_obj=unpacked.events_obj,
                                 **unpacked.extra_args)
-        
+
     def _put_result(self, task, config_obj, events_obj, **kwargs):
         now = safe_get(kwargs, 'date', datetime.datetime.utcnow().isoformat())
         hostname = safe_get(kwargs, 'hostname', socket.gethostname())
@@ -82,7 +77,7 @@ class MongoRepo(ExperimentRepo):
         }
         if 'eid' in kwargs:
             post.update({'_id': ObjectId(kwargs['eid'])})
-            
+
         try:
             coll = self.db[task]
             result = coll.insert_one(post)
@@ -179,7 +174,7 @@ class MongoRepo(ExperimentRepo):
                     return experiment_aggregate_set.sort(sort)
             else:
                 return BackendError(message='experiments can only be sorted when event_type=test_events')
-        
+
     @staticmethod
     def _update_query(q, **kwargs):
         query = q
@@ -264,7 +259,7 @@ class MongoRepo(ExperimentRepo):
             return BackendError('no config [{}] in [{}] database'.format(sha1, task))
         else:
             return j["config"]
-    
+
     def get_related_datasets(self, task, dataset):
         """
         for now, lets just get the datasets from all tasks and filter by 'project:name:features'
@@ -288,7 +283,7 @@ class MongoRepo(ExperimentRepo):
                 if d.startswith(dataset):
                     datasets.append(d)
             return datasets
-    
+
     def get_task_names(self):
         return self.db.collection_names()
 
@@ -312,25 +307,25 @@ class MongoRepo(ExperimentRepo):
         if not store:
             return BackendError('could not get summary for task: [{}]'.format(task))
         return TaskDatasetSummarySet(task=task, data=store).groupby()
-    
+
     def summary(self):
         tasks = self.get_task_names()
         if "system.indexes" in tasks:
             tasks.remove("system.indexes")
         return [self.task_summary(task) for task in tasks]
-        
+
     def dump(self, zipfile='xpctldump-{}'.format(datetime.datetime.now().isoformat()), task_eids={}):
         """ dump reporting log and config for later consumption"""
         tasks = self.get_task_names() if not task_eids.keys() else list(task_eids.keys())
         if "system.indexes" in tasks:
             tasks.remove("system.indexes")
-    
+
         base_dir = '/tmp/xpctldump'
         if os.path.exists(base_dir):
             shutil.rmtree(base_dir)
-    
+
         os.makedirs(base_dir, exist_ok=True)
-    
+
         for task in tasks:
             coll = self.db[task]
             query = self._update_query({}, id=listify(task_eids.get(task, [])))
@@ -341,7 +336,7 @@ class MongoRepo(ExperimentRepo):
             for exp in experiments:
                 write_experiment(exp, _dir)
         return shutil.make_archive(base_name=zipfile, format='zip', root_dir='/tmp', base_dir='xpctldump')
-    
+
     def restore(self, dump):
         """ if dump is in zip format, will unzip it. expects the following dir structure in the unzipped file:
         <root>
@@ -393,7 +388,7 @@ class MongoResult(object):
         self.tick = tick
         self.phase = phase
         self.version = version
-    
+
     def get_prop(self, field):
         return self.__dict__[field]
 
@@ -404,7 +399,7 @@ class MongoResultSet(object):
         super(MongoResultSet, self).__init__()
         self.data = data if data else []
         self.length = len(self.data)
-    
+
     def add_data(self, data_point):
         """
         add a result data point
@@ -413,18 +408,18 @@ class MongoResultSet(object):
         """
         self.data.append(data_point)
         self.length += 1
-    
+
     # TODO: add property annotations
     def __getitem__(self, i):
         return self.data[i]
-    
+
     def __iter__(self):
         for i in range(self.length):
             yield self.data[i]
-    
+
     def __len__(self):
         return self.length
-    
+
     def groupby(self, key):
         """ group the data points by key"""
         data_groups = {}
@@ -435,7 +430,7 @@ class MongoResultSet(object):
             else:
                 data_groups[field].append(datum)
         return data_groups
-    
+
     def experiments(self):
         grouped_results = self.groupby('eid')
         experiments = []

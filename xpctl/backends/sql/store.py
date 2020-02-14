@@ -4,7 +4,7 @@ import datetime
 import socket
 import json
 import getpass
-from baseline.utils import export, listify
+from baseline.utils import listify
 from mead.utils import hash_config
 from baseline.version import __version__
 from xpctl.backends.backend import log2json, get_experiment_label, METRICS_SORT_ASCENDING, safe_get, \
@@ -14,8 +14,6 @@ from xpctl.backends.backend import BackendError, BackendSuccess, TaskDatasetSumm
 from baseline.utils import unzip_files, read_config_file
 import shutil
 
-__all__ = []
-exporter = export(__all__)
 
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
@@ -24,7 +22,6 @@ import sqlalchemy.orm as orm
 from xpctl.backends.core import ExperimentRepo
 
 
-@exporter
 class SqlResult(Base):
     __tablename__ = 'results'
     id = sql.Column(sql.Integer, primary_key=True)
@@ -34,7 +31,6 @@ class SqlResult(Base):
     event = orm.relationship('SqlEvent', back_populates='results', cascade='all,delete')
 
 
-@exporter
 class SqlEvent(Base):
     __tablename__ = 'events'
     id = sql.Column(sql.Integer, primary_key=True)
@@ -46,7 +42,6 @@ class SqlEvent(Base):
     results = orm.relationship('SqlResult', back_populates='event', cascade='all,delete')
 
 
-@exporter
 class SqlExperiment(Base):
     __tablename__ = 'experiments'
     eid = sql.Column(sql.Integer, primary_key=True)
@@ -65,7 +60,6 @@ class SqlExperiment(Base):
     events = orm.relationship('SqlEvent', back_populates='experiment', cascade='all,delete')
 
 
-@exporter
 class SQLRepo(ExperimentRepo):
 
     def _connect(self, uri):
@@ -95,10 +89,10 @@ class SQLRepo(ExperimentRepo):
         unpacked = client_experiment_to_put_result_consumable(exp)
         return self._put_result(task=task, config_obj=unpacked.config_obj, events_obj=unpacked.events_obj,
                                 **unpacked.extra_args)
-    
+
     def _put_result(self, task, config_obj, events_obj, **kwargs):
         session = self.Session()
-        
+
         now = safe_get(kwargs, 'date', datetime.datetime.utcnow().isoformat())
         hostname = safe_get(kwargs, 'hostname', socket.gethostname())
         username = safe_get(kwargs, 'username', getpass.getuser())
@@ -140,7 +134,7 @@ class SQLRepo(ExperimentRepo):
             return BackendSuccess(message=experiment.eid)
         except sql.exc.SQLAlchemyError as e:
             return BackendError(message=str(e))
-        
+
     def get_model_location(self, task, eid):
         session = self.Session()
         exp = session.query(SqlExperiment).get(eid)
@@ -195,7 +189,7 @@ class SQLRepo(ExperimentRepo):
         if exp is None or exp.scalar() is None:
             return BackendError(message='no experiment with id [{}] for task [{}]'.format(eid, task))
         return self.sql_result_to_data_experiment(exp.one(), event_type, metrics)
-    
+
     def get_results(self, task, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
         session = self.Session()
         metrics = [x for x in listify(metric) if x.strip()]
@@ -232,7 +226,7 @@ class SQLRepo(ExperimentRepo):
                     return experiment_aggregate_set.sort(sort)
             else:
                 return BackendError(message='experiments can only be sorted when event_type=test_events')
-         
+
     def list_results(self, task, param_dict, user, metric, sort, event_type):
         session = self.Session()
         data_experiments = []
@@ -278,7 +272,7 @@ class SQLRepo(ExperimentRepo):
         for exp in hits:
             sql_experiments.append(self.sql_result_to_data_experiment(exp, event_type='test_events', metrics_from_user=[]))
         return self.get_data_experiment_set(sql_experiments)
-        
+
     def config2json(self, task, sha1):
         try:
             session = self.Session()
@@ -315,12 +309,12 @@ class SQLRepo(ExperimentRepo):
         if "system.indexes" in tasks:
             tasks.remove("system.indexes")
         return [self.task_summary(task) for task in tasks]
-       
+
     def dump(self, zipfile='xpctl-sqldump-{}'.format(datetime.datetime.now().isoformat()), task_eids={}):
         """ dump reporting log and config for later consumption. you"""
         tasks = self.get_task_names() if not task_eids.keys() else list(task_eids.keys())
         session = self.Session()
-        
+
         base_dir = '/tmp/xpctldump'
         if os.path.exists(base_dir):
             shutil.rmtree(base_dir)
@@ -428,7 +422,7 @@ class SQLRepo(ExperimentRepo):
         if event_type == 'test_events':
             return 'Test'
         BackendError(message='Unknown event type {}'.format(event_type))
-    
+
     @staticmethod
     def get_filtered_metrics(metrics_from_db, metrics_from_user):
         if not metrics_from_user:
@@ -438,15 +432,15 @@ class SQLRepo(ExperimentRepo):
         else:
             metrics = list(metrics_from_user)
         return metrics
-    
+
     @staticmethod
     def get_sql_metrics(event):
         return set([r.metric for r in event.results])
-    
+
     @staticmethod
     def flatten(_list):
         return [item for sublist in _list for item in sublist]
-    
+
     @staticmethod
     def create_results(event, metrics):
         results = []
