@@ -21,7 +21,7 @@ def clean_db(func):
     @wraps(func)
     def clean(*args, **kwargs):
         try:
-            eids = [x.eid for x in API.list_experiments_by_prop(TASK, prop=None, value=None)]
+            eids = [x.eid for x in API.list_experiments_by_prop(TASK)]
             for eid in eids:
                 response = API.remove_experiment(TASK, eid)
                 if response.response_type == 'error':
@@ -74,7 +74,7 @@ def test_put_result_one(setup):
         test_events=[Result(metric='t', tick_type='t', phase='Test', tick=0, value=0.1)]
     )
     eid = _put_one_exp(exp)
-    result = API.list_experiments_by_prop(TASK, prop='eid', value=eid)
+    result = API.list_experiments_by_prop(TASK, eid=eid)
     assert len(result) == 1
 
 
@@ -99,7 +99,7 @@ def test_experiment_details(setup):
     )
     eid = _put_one_exp(exp)
     try:
-        result = API.list_experiments_by_prop(TASK, prop='eid', value=eid)
+        result = API.list_experiments_by_prop(TASK, eid=eid)
     except ApiException:
         print(eid)
         return False
@@ -125,7 +125,14 @@ def _find_by_prop_unique(prop, expected_value):
     :return:
     """
     try:
-        result = API.list_experiments_by_prop(TASK, prop=prop, value=expected_value)
+        if prop == 'label':
+            result = API.list_experiments_by_prop(TASK, label=expected_value)
+        elif prop == 'dataset':
+            result = API.list_experiments_by_prop(TASK, dataset=expected_value)
+        elif prop == 'username':
+            result = API.list_experiments_by_prop(TASK, user=[expected_value])
+        else:
+            return False
         return len(result) == 1
     except ApiException:
         return False
@@ -138,7 +145,6 @@ def test_update_property(setup):
     dataset = _generate_random_string()
     config = '{"test":"test"}'
     username = _generate_random_string()
-    hostname = _generate_random_string()
     exp = Experiment(
         dataset='d',
         label='l',
@@ -154,15 +160,20 @@ def test_update_property(setup):
     API.update_property(TASK, eid, 'dataset', dataset)
     API.update_property(TASK, eid, 'label', label)
     API.update_property(TASK, eid, 'username', username)
-    API.update_property(TASK, eid, 'hostname', hostname)
     assert _find_by_prop_unique(prop='label', expected_value=label)
     assert _find_by_prop_unique(prop='dataset', expected_value=dataset)
     assert _find_by_prop_unique(prop='username', expected_value=username)
-    assert _find_by_prop_unique(prop='hostname', expected_value=hostname)
 
 
 def _test_list_experiments_by_prop(prop, value, experiments):
-    results = API.list_experiments_by_prop(TASK, prop=prop, value=value)
+    if prop == 'dataset':
+        results = API.list_experiments_by_prop(TASK, dataset=value)
+    elif prop == 'label':
+        results = API.list_experiments_by_prop(TASK, label=value)
+    elif prop == 'username':
+        results = API.list_experiments_by_prop(TASK, user=[value])
+    else:
+        return False
     expected = [exp.eid for exp in experiments if getattr(exp, prop) == value]
     results = [r.eid for r in results]
     return set(expected) == set(results)
@@ -211,7 +222,7 @@ def test_list_experiments_by_prop(setup):
     value = 'd1'
     users = [['u1', 'u2'], ['u1']]
     for user in users:
-        results = API.list_experiments_by_prop(TASK, prop=prop, value=value, user=user)
+        results = API.list_experiments_by_prop(TASK, dataset=value, user=user)
         result_eids = [x.eid for x in results]
         expected_eids = [x.eid for x in experiments if x.dataset == 'd1' and x.username in user]
         assert set(result_eids) == set(expected_eids)
@@ -233,13 +244,13 @@ def test_list_experiments_by_prop(setup):
             )
         )
         experiments.append(exp_value(eid=result, value=value))
-    results = API.list_experiments_by_prop(TASK, prop='dataset', value=dataset, sort='f1')  # get results only from that
+    results = API.list_experiments_by_prop(TASK, dataset=dataset, sort='f1')  # get results only from that
     # unique dataset, sort by f1
     _max = experiments[-1]
     assert results[0].eid == _max.eid
 
 
-def _test_reduction_dim(prop, value, reduction_dim, experiments):
+def _test_reduction_dim_dataset(dataset_value, reduction_dim, experiments):
     """
     The results from API should return proper groups
     :param prop:
@@ -248,9 +259,29 @@ def _test_reduction_dim(prop, value, reduction_dim, experiments):
     :param experiments:
     :return:
     """
-    results = API.get_results_by_prop(TASK, prop=prop, value=value, reduction_dim=reduction_dim)
+    results = API.get_results_by_prop(TASK, dataset=dataset_value, reduction_dim=reduction_dim)
     expected = {}
-    for item in [getattr(exp, reduction_dim) for exp in experiments if getattr(exp, prop) == value]:
+    for item in [getattr(exp, reduction_dim) for exp in experiments if getattr(exp, 'dataset') == dataset_value]:
+        if item not in expected:
+            expected[item] = 1
+        else:
+            expected[item] += 1
+    results = {getattr(r, reduction_dim): r.num_exps for r in results}
+    return expected == results
+
+
+def _test_reduction_dim_label(label_value, reduction_dim, experiments):
+    """
+    The results from API should return proper groups
+    :param prop:
+    :param value:
+    :param reduction_dim:
+    :param experiments:
+    :return:
+    """
+    results = API.get_results_by_prop(TASK, label=label_value, reduction_dim=reduction_dim)
+    expected = {}
+    for item in [getattr(exp, reduction_dim) for exp in experiments if getattr(exp, 'label') == label_value]:
         if item not in expected:
             expected[item] = 1
         else:
@@ -293,5 +324,8 @@ def test_get_results_by_prop(setup):
     # find by a property and group by different reduction dims
     for prop, values in {'dataset': datasets, 'label': labels}.items():
         for value in values:
-            for reduction_dim in ['sha1', 'eid', 'dataset', 'label']:
-                assert _test_reduction_dim(prop=prop, value=value, reduction_dim=reduction_dim, experiments=experiments)
+            for reduction_dim in ['sha1', 'eid', 'label']:
+                if prop == 'dataset':
+                    assert _test_reduction_dim_dataset(dataset_value=value, reduction_dim=reduction_dim, experiments=experiments)
+                else:
+                    assert _test_reduction_dim_label(label_value=value, reduction_dim=reduction_dim, experiments=experiments)
