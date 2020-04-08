@@ -1,5 +1,6 @@
 from copy import deepcopy
 from collections import namedtuple
+from itertools import groupby
 import json
 import os
 import numpy as np
@@ -185,42 +186,56 @@ class ExperimentGroup(object):
         data = {}
         num_experiments = {}
         for reduction_dim_value, experiments in self.grouped_experiments.items():
-            num_experiments[reduction_dim_value] = len(experiments)
-            data[reduction_dim_value] = {}
-            for experiment in experiments:
-                results = experiment.get_prop(event_type)
-                for result in results:
-                    if result.metric not in data[reduction_dim_value]:
-                        data[reduction_dim_value][result.metric] = [result.value]
-                    else:
-                        data[reduction_dim_value][result.metric].append(result.value)
+            for dataset, _experiments in groupby(experiments, key=lambda exp: exp.dataset):
+                _experiments = list(_experiments)
+                num_experiments[reduction_dim_value] = {dataset: len(_experiments)}
+                data[reduction_dim_value] = {dataset: {} for dataset in prop_dict['dataset']}
+                for experiment in _experiments:
+                    results = experiment.get_prop(event_type)
+                    for result in results:
+                        if result.metric not in data[reduction_dim_value]:
+                            data[reduction_dim_value][dataset][result.metric] = [result.value]
+                        else:
+                            data[reduction_dim_value][dataset][result.metric].append(result.value)
+        # for each reduction_dim_value, only one dataset can have metrics, the others are empty
+        _data = {reduction_dim_value: {} for reduction_dim_value in data}
+        for reduction_dim_value in data:
+            for dataset in data[reduction_dim_value]:
+                if data[reduction_dim_value][dataset]:
+                    _data[reduction_dim_value][dataset] = data[reduction_dim_value][dataset]
+        data = _data
         # for each reduction dim value, (say when sha1 = x), all data[x][metric] lists should have the same length.
         for reduction_dim_value in data:
-            lengths = []
-            for metric in data[reduction_dim_value]:
-                lengths.append(len(data[reduction_dim_value][metric]))
-            try:
-                assert len(set(lengths)) == 1
-            except AssertionError:
-                raise AssertionError('when reducing experiments over {}, for {}={}, the number of results are not the '
-                                     'same over all metrics'.format(self.reduction_dim, self.reduction_dim,
-                                                                    reduction_dim_value))
+            for dataset in data[reduction_dim_value]:
+                lengths = []
+                for metric in data[reduction_dim_value][dataset]:
+                    lengths.append(len(data[reduction_dim_value][dataset][metric]))
+                try:
+                    assert len(set(lengths)) == 1
+                except AssertionError:
+                    raise AssertionError('when reducing experiments over {}, for {}={}, the number of results are '
+                                         'not the same over all metrics'.format(self.reduction_dim,
+                                                                                self.reduction_dim,
+                                                                                reduction_dim_value))
 
         aggregate_resultset = ExperimentAggregateSet(data=[])
+        del prop_dict['dataset']  # prop_dict must have dataset
         for reduction_dim_value in data:
-            values = {}
-            d = {
-                self.reduction_dim: reduction_dim_value,
-                'num_exps': num_experiments[reduction_dim_value],
-                **prop_dict
-            }
-            agr = deepcopy(ExperimentAggregate(task=self.task, **d))
-            for metric in data[reduction_dim_value]:
-                for fn_name, fn in aggregate_fns.items():
-                    agg_value = fn(data[reduction_dim_value][metric])
-                    values[fn_name] = agg_value
-                agr.add_result(deepcopy(AggregateResult(metric=metric, values=values)), event_type=event_type)
-            aggregate_resultset.add_data(agr)
+            for dataset in data[reduction_dim_value]:
+                    prop_dict.update({'dataset': dataset})
+                    values = {}
+                    d = {
+                        self.reduction_dim: reduction_dim_value,
+                        'num_exps': num_experiments[reduction_dim_value][dataset],
+                        **prop_dict
+                    }
+                    agr = deepcopy(ExperimentAggregate(task=self.task, **d))
+                    for metric in data[reduction_dim_value][dataset]:
+                        for fn_name, fn in aggregate_fns.items():
+                            agg_value = fn(data[reduction_dim_value][dataset][metric])
+                            values[fn_name] = agg_value
+                        agr.add_result(deepcopy(AggregateResult(metric=metric, values=values)), event_type=event_type)
+                    aggregate_resultset.add_data(agr)
         return aggregate_resultset
 
 
