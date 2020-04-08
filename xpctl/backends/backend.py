@@ -193,7 +193,7 @@ class ExperimentGroup(object):
                 for experiment in _experiments:
                     results = experiment.get_prop(event_type)
                     for result in results:
-                        if result.metric not in data[reduction_dim_value]:
+                        if result.metric not in data[reduction_dim_value][dataset]:
                             data[reduction_dim_value][dataset][result.metric] = [result.value]
                         else:
                             data[reduction_dim_value][dataset][result.metric].append(result.value)
@@ -233,6 +233,7 @@ class ExperimentGroup(object):
                     for metric in data[reduction_dim_value][dataset]:
                         for fn_name, fn in aggregate_fns.items():
                             agg_value = fn(data[reduction_dim_value][dataset][metric])
+                            print(metric, dataset, fn_name, data[reduction_dim_value][dataset][metric], agg_value)
                             values[fn_name] = agg_value
                         agr.add_result(deepcopy(AggregateResult(metric=metric, values=values)), event_type=event_type)
                     aggregate_resultset.add_data(agr)
