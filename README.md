@@ -6,8 +6,7 @@ Previously, it was a part of [baseline](https://github.com/dpressel/baseline/).
 
 ### Usage
 
-In `mead` we have separate **tasks** such as classify or tagger. Each 
-1task can have multiple **experiments**, each corresponding to a model or different hyperparameters of the same model. An experiment is uniquely identified by the id. The configuration for an experiment is uniquely identified by hash(_sha1_) of the config file. 
+In `mead` we have separate **tasks** such as classify or tagger. Each task can have multiple **experiments**, each corresponding to a model or different hyperparameters of the same model. An experiment is uniquely identified by the id. The configuration for an experiment is uniquely identified by hash(_sha1_) of the config file. 
 
 After an experiment is done, use `xpctl` to report the results to a database server. Then use it to analyze, compare and export your experimental results. 
 
