@@ -7,13 +7,12 @@ from xpctl import __version__
 
 class About(object):
     NAME = 'xpctl'
-    AUTHOR = 'dpressel'
+    AUTHOR = 'mead-ml'
     VERSION = __version__
-    EMAIL = "{}@gmail.com".format(AUTHOR)
-    BASE_URL = "https://www.github.com/{}/baseline/tree/master".format(AUTHOR)
-    URL = "{}/python/{}".format(BASE_URL, NAME)
+    EMAIL = "mead.baseline@gmail.com"
+    URL = "https://www.github.com/{}/{}".format(AUTHOR, NAME)
     DOC_NAME = "docs/{}.md".format(NAME)
-    DOC_URL = "{}/docs/".format(BASE_URL)
+    DOC_URL = "{}/docs/".format(URL)
 
 
 def fix_links(text):

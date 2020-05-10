@@ -1,8 +1,8 @@
 ## XPCTL
 
-`xpctl` is a command-line interface to track experimental results and provide access to a global leaderboard. After running an experiment through `mead`, the results and the logs are committed to a database. Several commands are provided to show the best experimental results under various constraints.
+`xpctl` is a command-line interface to track experimental results and provide access to a global leaderboard. After running an experiment, the results and the logs are committed to a database. Several commands are provided to show the best experimental results under various constraints.
 
-Previously, it was a part of [baseline](https://github.com/dpressel/baseline/).
+`xpctl` was developed as the primary backend for experiment storage for [mead-baseline](https://github.com/dpressel/baseline/).
 
 ### Usage
 
@@ -22,7 +22,7 @@ The commands are described in [docs/commands.md](docs/commands.md).
 ### Installation
 
 -  [Install the server](orchestration/README.md)
--  Install the client with `pip install -e .` 
+-  Install the client with `pip install mead-xpctl` or locally with `pip install -e .`
 -  add this directory to your `PYTHONPATH` 
 
 #### Removing previous installation
