@@ -36,7 +36,7 @@ case $key in
     shift
     ;;
     -b|--backend)
-    BACK_END="$2"
+    BACKEND="$2"
     shift
     shift
     ;;
@@ -60,19 +60,19 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 DB_HOST=${DB_HOST:-localhost}
 DB_PORT=${DB_PORT:-27017}
-BACK_END=${BACK_END:-mongo}
+BACKEND=${BACKEND:-mongo}
 PORT=${PORT:-5310}
 
 CON_BUILD=xpctl-server
 
-#docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} bash
+#docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACKEND} bash
 
 
 if [ -n "$DB_USER" ]  # if the database creds are to be overriden run time
 then
-    docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} --backend ${BACK_END} \
+    docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACKEND} --backend ${BACKEND} \
 --user ${DB_USER} --passwd ${DB_PASS} --dbhost ${DB_HOST} --dbport ${DB_PORT} --port ${PORT}
 else
-   docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACK_END} --backend ${BACK_END} \
+   docker run -e LANG=C.UTF-8 --rm --name=${CON_BUILD} --network=host -it ${CON_BUILD}-${BACKEND} --backend ${BACKEND} \
 --cred /usr/xpctl/xpctlcred.yaml
 fi
