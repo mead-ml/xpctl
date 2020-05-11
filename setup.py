@@ -15,7 +15,7 @@ class About(object):
     DOC_URL = "{}/docs/".format(URL)
 
 
-def read_doc(f_name, new_name=None, fix_fn=fix_links):
+def read_doc(f_name, new_name=None):
     """
     Because our readme is outside of this dir we need to copy it in so
     that it is picked up by the install.
