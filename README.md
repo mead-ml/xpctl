@@ -16,4 +16,4 @@
   - `pip install mead-xpctl`
   - or locally with `pip install -e .`
 
-
+### [Documentation](docs/main.yml)

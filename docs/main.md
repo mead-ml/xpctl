@@ -6,5 +6,5 @@ After an experiment is done, use `xpctl` to report the results to a database ser
 
 The results are posted to a database server through a REST service. They are accessed through a command line client that talks to the service.
 
-The commands are described in [docs/commands.md](docs/commands.md).
+The commands are described [here](commands.md).
 
