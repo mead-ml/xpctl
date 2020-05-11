@@ -26,6 +26,6 @@ jobs:
           with:
               user: __token__
               password: ${{ secrets.pypi_password }}
-              packages_dir: xpctl/dist
+              packages_dir: dist
 
 
