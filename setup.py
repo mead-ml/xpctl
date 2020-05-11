@@ -7,23 +7,15 @@ from xpctl import __version__
 
 class About(object):
     NAME = 'xpctl'
-    AUTHOR = 'dpressel'
+    AUTHOR = 'mead-ml'
     VERSION = __version__
-    EMAIL = "{}@gmail.com".format(AUTHOR)
-    BASE_URL = "https://www.github.com/{}/baseline/tree/master".format(AUTHOR)
-    URL = "{}/python/{}".format(BASE_URL, NAME)
+    EMAIL = "mead.baseline@gmail.com"
+    URL = "https://www.github.com/{}/{}".format(AUTHOR, NAME)
     DOC_NAME = "docs/{}.md".format(NAME)
-    DOC_URL = "{}/docs/".format(BASE_URL)
+    DOC_URL = "{}/docs/".format(URL)
 
 
-def fix_links(text):
-    """Pypi doesn't seem to host multiple docs so replace local links with ones to github."""
-    regex = re.compile(r"\[(.*?)\]\((.*?\.md)\)")
-    text = regex.sub(r"[\1]({}\2)".format(About.DOC_URL), text)
-    return text
-
-
-def read_doc(f_name, new_name=None, fix_fn=fix_links):
+def read_doc(f_name, new_name=None):
     """
     Because our readme is outside of this dir we need to copy it in so
     that it is picked up by the install.
@@ -36,7 +28,7 @@ def read_doc(f_name, new_name=None, fix_fn=fix_links):
     if os.path.isfile(doc_loc):
         shutil.copyfile(doc_loc, new_loc)
     descript = open(new_loc, 'r').read()
-    return fix_fn(descript)
+    return descript
 
 
 def main():

@@ -10,16 +10,8 @@ COPY orchestration/secrets/xpctlcred-${backend}-${host}.yaml /usr/xpctl/xpctlcre
 
 RUN pip install -r server-requirements.txt
 
-COPY xpctl /usr/xpctl/
-
-# fetch baseline and unzip
-ADD https://github.com/dpressel/baseline/archive/master.tar.gz /usr/baseline-master.tar.gz
-RUN cd /usr && tar xzf baseline-master.tar.gz
-
-# we will phase this out eventually, but for now an old version of xpctl still exists in baseline. remove that.
-RUN rm -f /usr/baseline/python/xpctl
-
-ENV PYTHONPATH /usr:/usr/baseline-master/python
+COPY ./xpctl /usr/xpctl/
+ENV PYTHONPATH /usr
 ENV APP_NAME=xpctlserver
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
