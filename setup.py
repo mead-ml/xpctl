@@ -15,13 +15,6 @@ class About(object):
     DOC_URL = "{}/docs/".format(URL)
 
 
-def fix_links(text):
-    """Pypi doesn't seem to host multiple docs so replace local links with ones to github."""
-    regex = re.compile(r"\[(.*?)\]\((.*?\.md)\)")
-    text = regex.sub(r"[\1]({}\2)".format(About.DOC_URL), text)
-    return text
-
-
 def read_doc(f_name, new_name=None, fix_fn=fix_links):
     """
     Because our readme is outside of this dir we need to copy it in so
@@ -35,7 +28,7 @@ def read_doc(f_name, new_name=None, fix_fn=fix_links):
     if os.path.isfile(doc_loc):
         shutil.copyfile(doc_loc, new_loc)
     descript = open(new_loc, 'r').read()
-    return fix_fn(descript)
+    return descript
 
 
 def main():

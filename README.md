@@ -11,9 +11,9 @@
  
 ### Installation
 
--  [Install the server](orchestration/README.md)
+-  [Install the server](https://github.com/mead-ml/xpctl/blob/master/orchestration/README.md)
 -  Install the client
   - `pip install mead-xpctl`
   - or locally with `pip install -e .`
 
-### [Documentation](docs/main.yml)
+### [Documentation](https://github.com/mead-ml/xpctl/blob/master/docs/main.md)
