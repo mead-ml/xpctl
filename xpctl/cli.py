@@ -38,9 +38,9 @@ class ServerManager(object):
         if ServerManager.api is not None:
             click.echo(click.style(
                 "connection with xpctl server successful with [host]: {}".format(ServerManager.host), fg='green'
-            ))
+            ), err=True)
             return ServerManager.api
-        click.echo(click.style("server connection unsuccessful, aborting", fg='red'))
+        click.echo(click.style("server connection unsuccessful, aborting", fg='red'), err=True)
         sys.exit(1)
 
 
@@ -168,13 +168,17 @@ def details(task, sha1, user, metric, sort, event_type, n, output, output_fields
 @cli.command()
 @click.argument('task')
 @click.argument('sha1')
-@click.argument('filename')
-def config2json(task, sha1, filename):
+@click.argument('filename', required=False)
+@click.option("--indent", help="The number of spaces to indent the json output", type=int, default=2)
+def config2json(task, sha1, filename, indent=2):
     """Exports the config file for an experiment as a json file."""
     ServerManager.get()
     try:
         result = ServerManager.api.config2json(task, sha1)
-        write_config_file(result, filename)
+        if filename is not None:
+            write_config_file(result, filename)
+        else:
+            click.echo(json.dumps(result, indent=indent))
     except ApiException as e:
         click.echo(click.style(json.loads(e.body)['detail'], fg='red'))
 
