@@ -23,7 +23,7 @@ schemes:
 - "https"
 - "http"
 paths:
-  /put/{task}:
+  /put/:
     post:
       tags:
       - "xpctl"
@@ -35,11 +35,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
       - in: "body"
         name: "experiment"
         required: true
@@ -65,7 +60,7 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-  /update/{task}/{eid}/:
+  /update/{eid}/:
     get:
       tags:
       - "xpctl"
@@ -77,11 +72,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
       - name: "eid"
         in: "path"
         description: ""
@@ -107,7 +97,7 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-  /delete/{task}/{eid}:
+  /delete/{eid}:
     get:
       tags:
       - "xpctl"
@@ -119,11 +109,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: ""
-        required: true
-        type: "string"
       - name: "eid"
         in: "path"
         description: ""
@@ -139,7 +124,7 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-  /find/{task}:
+  /find/:
     get:
       tags:
       - "xpctl"
@@ -150,11 +135,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: "task name"
-        required: true
-        type: "string"
       - name: "eid"
         in: "query"
         description: "eid"
@@ -209,7 +189,7 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-  /results/{task}:
+  /results/:
     get:
       tags:
       - "xpctl"
@@ -219,10 +199,10 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: "task name"
-        required: true
+      - name: "dataset"
+        in: "query"
+        description: "dataset"
+        required: false
         type: "string"
       - name: "eid"
         in: "query"
@@ -232,11 +212,6 @@ paths:
       - name: "sha1"
         in: "query"
         description: "sha1"
-        required: false
-        type: "string"
-      - name: "dataset"
-        in: "query"
-        description: "dataset, e.g. SST2"
         required: false
         type: "string"
       - name: "label"
@@ -287,7 +262,7 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-  /{task}/{eid}:
+  /{eid}:
     get:
       tags:
       - "xpctl"
@@ -297,11 +272,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: "task name"
-        required: true
-        type: "string"
       - name: "eid"
         in: "path"
         description: "ID of experiment to return"
@@ -333,7 +303,7 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-  /config2json/{task}/{sha1}:
+  /config2json/{sha1}:
     get:
       tags:
       - "xpctl"
@@ -343,11 +313,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: "task"
-        required: true
-        type: "string"
       - name: "sha1"
         in: "path"
         description: "sha1"
@@ -367,7 +332,7 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-  /getmodelloc/{task}/{eid}:
+  /getmodelloc/{eid}:
     get:
       tags:
       - "xpctl"
@@ -377,11 +342,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: "task"
-        required: true
-        type: "string"
       - name: "eid"
         in: "path"
         description: "experiment id"
@@ -405,8 +365,8 @@ paths:
     get:
       tags:
       - "xpctl"
-      summary: "get summary for task"
-      description: "summary for task"
+      summary: "get summary for database"
+      description: "summary for database"
       operationId: "summary"
       produces:
       - "application/json"
@@ -417,7 +377,7 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/TaskSummary"
+              $ref: "#/definitions/DatasetSummary"
         400:
           description: "Invalid ID supplied"
         404:
@@ -427,26 +387,26 @@ paths:
           schema:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
-  /summary/{task}/:
+  /summary/{dataset}/:
     get:
       tags:
       - "xpctl"
-      summary: "get summary for task"
-      description: "summary for task"
-      operationId: "task_summary"
+      summary: "get summary for dataset"
+      description: "summary for dataset"
+      operationId: "dataset_summary"
       produces:
       - "application/json"
       parameters:
-      - name: "task"
+      - name: "dataset"
         in: "path"
-        description: "task"
+        description: "dataset"
         required: true
         type: "string"
       responses:
         200:
           description: "successful operation"
           schema:
-            $ref: "#/definitions/TaskSummary"
+            $ref: "#/definitions/DatasetSummary"
         400:
           description: "Invalid ID supplied"
         404:
@@ -521,10 +481,12 @@ definitions:
         aggregate_fn: "aggregate_fn"
   Experiment:
     type: "object"
+    required:
+    - "dataset"
     properties:
-      task:
+      dataset:
         type: "string"
-        example: "classify"
+        example: "SST2"
       eid:
         type: "string"
         example: "5b074775b5536c4bc124d95f"
@@ -534,9 +496,6 @@ definitions:
       config:
         type: "string"
         example: "{dataset: sst2}"
-      dataset:
-        type: "string"
-        example: "SST2"
       username:
         type: "string"
         example: "someone"
@@ -565,7 +524,9 @@ definitions:
         items:
           $ref: "#/definitions/Result"
     example:
+      sha1: "8ab6ab6ee8fdf14b111223e2edf48750c30c7e51"
       eid: "5b074775b5536c4bc124d95f"
+      hostname: "somehost"
       train_events:
       - phase: "phase"
         tick_type: "tick_type"
@@ -577,11 +538,6 @@ definitions:
         metric: "f1"
         tick: 1
         value: 0.365897
-      label: "label"
-      version: "1.4.1"
-      sha1: "8ab6ab6ee8fdf14b111223e2edf48750c30c7e51"
-      hostname: "somehost"
-      task: "classify"
       valid_events:
       - phase: "phase"
         tick_type: "tick_type"
@@ -594,8 +550,10 @@ definitions:
         tick: 1
         value: 0.365897
       exp_date: "2019-05-02T23:29:46.578675"
-      config: "{dataset: sst2}"
+      label: "label"
       dataset: "SST2"
+      config: "{dataset: sst2}"
+      version: "1.4.1"
       test_events:
       - phase: "phase"
         tick_type: "tick_type"
@@ -611,9 +569,9 @@ definitions:
   ExperimentAggregate:
     type: "object"
     properties:
-      task:
+      dataset:
         type: "string"
-        example: "classify"
+        example: "SST2"
       eid:
         type: "string"
         example: "5b074775b5536c4bc124d95f"
@@ -623,9 +581,6 @@ definitions:
       config:
         type: "string"
         example: "{dataset: sst2}"
-      dataset:
-        type: "string"
-        example: "SST2"
       username:
         type: "string"
         example: "someone"
@@ -678,7 +633,6 @@ definitions:
       version: "1.4.1"
       sha1: "8ab6ab6ee8fdf14b111223e2edf48750c30c7e51"
       hostname: "somehost"
-      task: "classify"
       valid_events:
       - metric: "f1"
         values:
@@ -693,8 +647,8 @@ definitions:
         - score: 0.80082819046101150206595775671303272247314453125
           aggregate_fn: "aggregate_fn"
       exp_date: "2019-05-02T23:29:46.578675"
-      config: "{dataset: sst2}"
       dataset: "SST2"
+      config: "{dataset: sst2}"
       test_events:
       - metric: "f1"
         values:
@@ -709,20 +663,20 @@ definitions:
         - score: 0.80082819046101150206595775671303272247314453125
           aggregate_fn: "aggregate_fn"
       username: "someone"
-  TaskSummary:
+  DatasetSummary:
     type: "object"
     required:
+    - "dataset"
     - "summary"
-    - "task"
     properties:
-      task:
+      dataset:
         type: "string"
       summary:
         type: "object"
         properties: {}
     example:
       summary: "{}"
-      task: "task"
+      dataset: "dataset"
   Response:
     type: "object"
     required:

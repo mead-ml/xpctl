@@ -21,7 +21,7 @@ schemes:
 - "https"
 - "http"
 paths:
-  /put/{task}:
+  /put/:
     post:
       tags:
       - "xpctl"
@@ -33,11 +33,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        type: "string"
-        description: ""
-        required: true
       - name: "experiment"
         in: "body"
         schema:
@@ -64,7 +59,7 @@ paths:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 
-  /update/{task}/{eid}/:
+  /update/{eid}/:
     get:
       tags:
       - "xpctl"
@@ -76,11 +71,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        type: "string"
-        description: ""
-        required: true
       - name: "eid"
         in: "path"
         type: "string"
@@ -107,7 +97,7 @@ paths:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 
-  /delete/{task}/{eid}:
+  /delete/{eid}:
     get:
       tags:
       - "xpctl"
@@ -119,11 +109,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        type: "string"
-        description: ""
-        required: true
       - name: "eid"
         in: "path"
         type: "string"
@@ -140,7 +125,7 @@ paths:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 
-  /find/{task}:
+  /find/:
       get:
         tags:
         - "xpctl"
@@ -150,11 +135,6 @@ paths:
         produces:
         - "application/json"
         parameters:
-        - name: "task"
-          in: "path"
-          description: "task name"
-          required: true
-          type: "string"
         - name: "eid"
           in: "query"
           description: "eid"
@@ -202,7 +182,7 @@ paths:
               $ref: "#/definitions/Response"
         x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 
-  /results/{task}:
+  /results/:
     get:
       tags:
       - "xpctl"
@@ -212,10 +192,9 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: "task name"
-        required: true
+      - name: "dataset"
+        in: "query"
+        description: "dataset"
         type: "string"
       - name: "eid"
         in: "query"
@@ -224,10 +203,6 @@ paths:
       - name: "sha1"
         in: "query"
         description: "sha1"
-        type: "string"
-      - name: "dataset"
-        in: "query"
-        description: "dataset, e.g. SST2"
         type: "string"
       - name: "label"
         in: "query"
@@ -272,7 +247,7 @@ paths:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 
-  /{task}/{eid}:
+  /{eid}:
     get:
       tags:
       - "xpctl"
@@ -282,11 +257,6 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "task"
-        in: "path"
-        description: "task name"
-        required: true
-        type: "string"
       - name: "eid"
         in: "path"
         description: "ID of experiment to return"
@@ -319,7 +289,7 @@ paths:
             $ref: "#/definitions/Response"
       x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 
-  /config2json/{task}/{sha1}:
+  /config2json/{sha1}:
       get:
         tags:
         - "xpctl"
@@ -329,11 +299,6 @@ paths:
         produces:
         - "application/json"
         parameters:
-        - name: "task"
-          in: "path"
-          description: "task"
-          required: true
-          type: "string"
         - name: "sha1"
           in: "path"
           description: "sha1"
@@ -354,7 +319,7 @@ paths:
               $ref: "#/definitions/Response"
         x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 
-  /getmodelloc/{task}/{eid}:
+  /getmodelloc/{eid}:
         get:
           tags:
           - "xpctl"
@@ -364,11 +329,6 @@ paths:
           produces:
           - "application/json"
           parameters:
-          - name: "task"
-            in: "path"
-            description: "task"
-            required: true
-            type: "string"
           - name: "eid"
             in: "path"
             description: "experiment id"
@@ -393,8 +353,8 @@ paths:
         get:
           tags:
           - "xpctl"
-          summary: "get summary for task"
-          description: "summary for task"
+          summary: "get summary for database"
+          description: "summary for database"
           operationId: "summary"
           produces:
           - "application/json"
@@ -404,7 +364,7 @@ paths:
               schema:
                 type: "array"
                 items:
-                 $ref: "#/definitions/TaskSummary"
+                 $ref: "#/definitions/DatasetSummary"
             400:
               description: "Invalid ID supplied"
             404:
@@ -415,26 +375,26 @@ paths:
                 $ref: "#/definitions/Response"
           x-swagger-router-controller: "xpserver.controllers.xpctl_controller"
 
-  /summary/{task}/:
+  /summary/{dataset}/:
           get:
             tags:
             - "xpctl"
-            summary: "get summary for task"
-            description: "summary for task"
-            operationId: "task_summary"
+            summary: "get summary for dataset"
+            description: "summary for dataset"
+            operationId: "dataset_summary"
             produces:
             - "application/json"
             parameters:
-            - name: "task"
+            - name: "dataset"
               in: "path"
-              description: "task"
+              description: "dataset"
               required: true
               type: "string"
             responses:
               200:
                 description: "successful operation"
                 schema:
-                  $ref: "#/definitions/TaskSummary"
+                  $ref: "#/definitions/DatasetSummary"
               400:
                 description: "Invalid ID supplied"
               404:
@@ -507,10 +467,12 @@ definitions:
           
   Experiment:
     type: "object"
+    required:
+      -  dataset
     properties:
-      task:
+      dataset:
         type: "string"
-        example: "classify"
+        example: "SST2"
       eid:
         type: "string"
         example: "5b074775b5536c4bc124d95f"
@@ -520,9 +482,6 @@ definitions:
       config:
         type: "string"
         example: "{dataset: sst2}"
-      dataset:
-        type: "string"
-        example: "SST2"
       username:
         type: "string"
         example: "someone"
@@ -550,13 +509,13 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Result"
-  
+
   ExperimentAggregate:
     type: "object"
     properties:
-      task:
+      dataset:
         type: "string"
-        example: "classify"
+        example: "SST2"
       eid:
         type: "string"
         example: "5b074775b5536c4bc124d95f"
@@ -566,9 +525,6 @@ definitions:
       config:
         type: "string"
         example: "{dataset: sst2}"
-      dataset:
-        type: "string"
-        example: "SST2"
       username:
         type: "string"
         example: "someone"
@@ -602,13 +558,13 @@ definitions:
         items:
           $ref: "#/definitions/AggregateResult"
 
-  TaskSummary:
+  DatasetSummary:
     type: "object"
     required:
-    - "task"
-    - "summary"
+    - dataset
+    - summary
     properties:
-      task:
+      dataset:
         type: "string"
       summary:
         type: "object"
@@ -616,9 +572,9 @@ definitions:
   Response:
     type: "object"
     required:
-    - "code"
-    - "message"
-    - "response_type"
+    - code
+    - message
+    - response_type
     properties:
       code:
         type: "integer"

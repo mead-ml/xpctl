@@ -10,7 +10,7 @@ from xpctl.xpclient.api import XpctlApi
 from xpctl.xpclient import ApiClient
 from xpctl.xpclient.rest import ApiException
 from xpctl.clihelpers import experiment_to_df, experiment_aggregate_list_to_df, experiment_list_to_df, \
-    task_summary_to_df, task_summaries_to_df, read_config_stream
+    dataset_summary_to_df, dataset_summaries_to_df, read_config_stream
 from xpctl.utils import to_swagger_experiment, store_model, write_config_file
 from mead.utils import hash_config, get_dataset_from_key, index_by_label
 from baseline.utils import read_config_file
@@ -55,12 +55,11 @@ def cli(host, config):
 
 
 @cli.command()
-@click.argument('task')
 @click.argument('eid')
-def getmodelloc(task, eid):
-    """Get the model location for a particular task and record id"""
+def getmodelloc(eid):
+    """Get the model location for a particular experiment id"""
     ServerManager.get()
-    result = ServerManager.api.get_model_location(task, eid)
+    result = ServerManager.api.get_model_location(eid)
     if result.response_type == 'success':
         click.echo(click.style(result.message, fg='green'))
     else:
@@ -75,14 +74,13 @@ def getmodelloc(task, eid):
 @click.option('--sort', help="specify one metric to sort the results", default=None)
 @click.option('--output_fields', multiple=True, help="which field(s) you want to see in output",
               default=['username', 'sha1'])
-@click.argument('task')
 @click.argument('eid')
-def experiment(task, eid, event_type, output, metric, sort, output_fields):
+def experiment(eid, event_type, output, metric, sort, output_fields):
     """Get the details for an experiment"""
     event_type = EVENT_TYPES[event_type]
     ServerManager.get()
     try:
-        result = ServerManager.api.experiment_details(task, eid, event_type=event_type, metric=metric)
+        result = ServerManager.api.experiment_details(eid, event_type=event_type, metric=metric)
         prop_name_loc = {k: i for i, k in enumerate(output_fields)}
         result_df = experiment_to_df(exp=result, prop_name_loc=prop_name_loc, event_type=event_type, sort=sort)
         if output is None:
@@ -104,19 +102,18 @@ def experiment(task, eid, event_type, output, metric, sort, output_fields):
 @click.option('--aggregate_fn', help='aggregate functions', multiple=True,
               type=click.Choice(['min', 'max', 'avg', 'std']), default=['avg', 'std'])
 @click.option('--label', type=str, help='filter results with a certain label')
-@click.argument('task')
 @click.argument('dataset')
-def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggregate_fn, label):
+def results(dataset, metric, sort, nconfig, event_type, n, output, aggregate_fn, label):
     event_type = EVENT_TYPES[event_type]
     reduction_dim = 'sha1'
     ServerManager.get()
     try:
         if label:
-            result = ServerManager.api.get_results_by_prop(task, dataset=dataset, label=label,
+            result = ServerManager.api.get_results_by_prop(dataset=dataset, label=label,
                                                            reduction_dim=reduction_dim, metric=metric, sort=sort,
                                                            numexp_reduction_dim=nconfig, event_type=event_type)
         else:
-            result = ServerManager.api.get_results_by_prop(task, dataset=dataset,
+            result = ServerManager.api.get_results_by_prop(dataset=dataset,
                                                            reduction_dim=reduction_dim, metric=metric, sort=sort,
                                                            numexp_reduction_dim=nconfig, event_type=event_type)
         result_df = experiment_aggregate_list_to_df(exp_aggs=result, event_type=event_type, aggregate_fns=aggregate_fn)
@@ -140,9 +137,8 @@ def results(task, dataset, metric, sort, nconfig, event_type, n, output, aggrega
 @click.option('--output', help='output file (csv)')
 @click.option('--output_fields', multiple=True, help="which field(s) you want to see in output",
               default=['username', 'eid'])
-@click.argument('task')
 @click.argument('sha1')
-def details(task, sha1, user, metric, sort, event_type, n, output, output_fields):
+def details(sha1, user, metric, sort, event_type, n, output, output_fields):
     """
     Shows the results for all experiments for a particular config (sha1). Optionally filter out by user(s), metric(s),
     label or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
@@ -151,7 +147,7 @@ def details(task, sha1, user, metric, sort, event_type, n, output, output_fields
     event_type = EVENT_TYPES[event_type]
     ServerManager.get()
     try:
-        result = ServerManager.api.list_experiments_by_prop(task, sha1=sha1, user=user, metric=metric,
+        result = ServerManager.api.list_experiments_by_prop(sha1=sha1, user=user, metric=metric,
                                                             sort=sort, event_type=event_type)
         prop_name_loc = {k: i for i, k in enumerate(output_fields)}
         result_df = experiment_list_to_df(exps=result, prop_name_loc=prop_name_loc, event_type=event_type)
@@ -166,15 +162,14 @@ def details(task, sha1, user, metric, sort, event_type, n, output, output_fields
 
 
 @cli.command()
-@click.argument('task')
 @click.argument('sha1')
-@click.argument('filename', required=False)
+@click.option('--filename', required=False)
 @click.option("--indent", help="The number of spaces to indent the json output", type=int, default=2)
-def config2json(task, sha1, filename, indent=2):
+def config2json(sha1, filename, indent=2):
     """Exports the config file for an experiment as a json file."""
     ServerManager.get()
     try:
-        result = ServerManager.api.config2json(task, sha1)
+        result = ServerManager.api.config2json(sha1)
         if filename is not None:
             write_config_file(result, filename)
         else:
@@ -184,34 +179,30 @@ def config2json(task, sha1, filename, indent=2):
 
 
 @cli.command()
-@click.option('--task')
-def lbsummary(task):
+@click.option('--dataset')
+def lbsummary(dataset):
     """
-    Provides a summary of the leaderboard. Options: taskname. If you provide
-    a taskname, it will show all users and datasets for that task.
-    This is helpful because we often forget what datasets were
-    used for a task, which are the necessary parameters for the commands
-    `results` and `best` and `tasksummary`. Shows the summary for all available tasks if no option is specified.
+    Provides a summary of the leaderboard. Options: dataset name. If you provide
+    a dataset name, it will show all users and num_exps for that dataset.
     """
     ServerManager.get()
     try:
-        if task is not None:
-            result = task_summary_to_df(ServerManager.api.task_summary(task))
+        if dataset is not None:
+            result = dataset_summary_to_df(ServerManager.api.dataset_summary(dataset))
         else:
-            result = task_summaries_to_df(ServerManager.api.summary())
+            result = dataset_summaries_to_df(ServerManager.api.summary())
         click.echo(result)
     except ApiException as e:
         click.echo(click.style(json.loads(e.body)['detail'], fg='red'))
 
 
 @cli.command()
-@click.argument('task')
 @click.argument('eid')
 @click.argument('label')
-def updatelabel(task, label, eid):
-    """Update the _label_ for an experiment (identified by its eid) for a task"""
+def updatelabel(label, eid):
+    """Update the _label_ for an experiment (identified by its eid)"""
     ServerManager.get()
-    result = ServerManager.api.update_property(task, eid, prop='label', value=label)
+    result = ServerManager.api.update_property(eid, prop='label', value=label)
     if result.response_type == 'success':
         click.echo(click.style(result.message, fg='green'))
     else:
@@ -219,12 +210,11 @@ def updatelabel(task, label, eid):
 
 
 @cli.command()
-@click.argument('task')
 @click.argument('eid')
-def delete(task, eid):
+def delete(eid):
     """Deletes a record from the database and the associated model file from model-checkpoints if it exists."""
     ServerManager.get()
-    result = ServerManager.api.remove_experiment(task, eid)
+    result = ServerManager.api.remove_experiment(eid)
     if result.response_type == 'success':
         click.echo(click.style(result.message, fg='green'))
     else:
@@ -237,19 +227,14 @@ def delete(task, eid):
                               "such as ../tagger/tagger-model-tf-11967 or /home/ds/tagger/tagger-model-tf-11967")
 @click.option("--cstore", default="/data/model-checkpoints", help="location of the model checkpoint store")
 @click.option("--label", default=None, help="label for the experiment")
-@click.argument('task')
 @click.argument('config')
 @click.argument('log')
 @click.argument('dataset')
-def putresult(task, config, log, dataset, user, label, cbase, cstore):
+def putresult(config, log, dataset, user, label, cbase, cstore):
     """
-    Puts the results in a database. provide task name, config file, the reporting log file, and the dataset index file
+    Puts the results in a database. provide a config file, the reporting log file, and the dataset index file
     used in the experiment. Optionally can put the model files in a persistent storage.
     """
-    logf = log.format(task)
-    if not os.path.exists(logf):
-        click.echo(click.style("the log file at {} doesn't exist, provide a valid location".format(logf), fg='red'))
-        return
     if not os.path.exists(config):
         click.echo(click.style("the config file at {} doesn't exist, provide a valid location".format(config), fg='red'))
         return
@@ -262,7 +247,7 @@ def putresult(task, config, log, dataset, user, label, cbase, cstore):
     dataset_key = get_dataset_from_key(dataset_key, datasets_set)
     config_obj['dataset'] = dataset_key['label']
     ServerManager.get()
-    result = ServerManager.api.put_result(task, to_swagger_experiment(task, config_obj, log, username=user, label=label))
+    result = ServerManager.api.put_result(to_swagger_experiment(config_obj, log, username=user, label=label))
     if result.response_type == 'success':
         eid = result.message
         click.echo(click.style('results stored with experiment: {}'.format(result.message), fg='green'))
@@ -272,7 +257,7 @@ def putresult(task, config, log, dataset, user, label, cbase, cstore):
                              checkpoint_store=cstore, print_fn=click.echo)
         if result is not None:
             click.echo(click.style('model stored at {}'.format(result), fg='green'))
-            update_result = ServerManager.api.update_property(task, eid, prop='checkpoint', value=result)
+            update_result = ServerManager.api.update_property(eid, prop='checkpoint', value=result)
             if update_result.response_type == 'success':
                 click.echo(click.style(update_result.message, fg='green'))
             else:
@@ -285,28 +270,27 @@ def putresult(task, config, log, dataset, user, label, cbase, cstore):
 
 @cli.command()
 @click.option("--cstore", default="/data/model-checkpoints", help="location of the model checkpoint store")
-@click.argument('task')
 @click.argument('eid')
 @click.argument('cbase')
-def putmodel(task, eid, cbase, cstore):
+def putmodel(eid, cbase, cstore):
     """
-    Puts the baseline model files in persistent storage. provide task, id and model base (""tagger-model-tf-").
+    Puts the baseline model files in persistent storage. provide id and model base (""tagger-model-tf-").
     optionally provide the storage location (/data/model-checkpoints by default)
     """
     ServerManager.get()
     event_type = EVENT_TYPES['test']
     metric = []
     try:
-        result = ServerManager.api.experiment_details(task, eid, event_type=event_type, metric=metric)
+        result = ServerManager.api.experiment_details(eid, event_type=event_type, metric=metric)
         config_obj = read_config_stream(result.config)
         if config_obj is None:
-            click.echo('can not process the config for experiment {} in {} database'.format(task, eid))
+            click.echo('can not process the config for experiment {} in database'.format(eid))
             sys.exit(1)
         result = store_model(checkpoint_base=cbase, config_sha1=hash_config(config_obj),
                              checkpoint_store=cstore, print_fn=click.echo)
         if result is not None:
             click.echo(click.style('model stored at {}'.format(result), fg='green'))
-            update_result = ServerManager.api.update_property(task, eid, prop='checkpoint', value=result)
+            update_result = ServerManager.api.update_property(eid, prop='checkpoint', value=result)
             if update_result.response_type == 'success':
                 click.echo(click.style(update_result.message, fg='green'))
             else:
@@ -328,9 +312,8 @@ def putmodel(task, eid, cbase, cstore):
 @click.option('--output', help='output file (csv)')
 @click.option('--output_fields', multiple=True, help="which field(s) you want to see in output",
               default=['username', 'eid'])
-@click.argument('task')
 @click.argument('label')
-def searchlabel(task, label, user, metric, sort, event_type, n, output, output_fields):
+def searchlabel(label, user, metric, sort, event_type, n, output, output_fields):
     """
     Shows the results for all experiments for a particular label. Optionally filter out by user(s), metric(s),
     or sort by one metric. Shows the results on the test data by default, provide event_type (train/valid/test)
@@ -339,7 +322,7 @@ def searchlabel(task, label, user, metric, sort, event_type, n, output, output_f
     event_type = EVENT_TYPES[event_type]
     ServerManager.get()
     try:
-        result = ServerManager.api.list_experiments_by_prop(task, label=label, user=user, metric=metric,
+        result = ServerManager.api.list_experiments_by_prop(label=label, user=user, metric=metric,
                                                             sort=sort, event_type=event_type)
         prop_name_loc = {k: i for i, k in enumerate(output_fields)}
         result_df = experiment_list_to_df(exps=result, prop_name_loc=prop_name_loc, event_type=event_type)

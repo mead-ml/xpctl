@@ -12,7 +12,7 @@ from xpctl.xpserver.models import Experiment as ServerExperiment
 from xpctl.xpserver.models import Result as ServerResult
 from xpctl.xpserver.models import ExperimentAggregate as ServerExperimentAggregate
 from xpctl.xpserver.models import Response as ServerResponse
-from xpctl.xpserver.models import TaskSummary as ServerTaskSummary
+from xpctl.xpserver.models import DatasetSummary as ServerDatasetSummary
 from xpctl.xpserver.models import AggregateResult as ServerAggregateResult
 from xpctl.xpserver.models import AggregateResultValues
 
@@ -55,10 +55,9 @@ class AggregateResult(object):
 
 class Experiment(object):
     """ an experiment"""
-    def __init__(self, train_events, valid_events, test_events, task, eid, username, hostname, config, exp_date, label,
-                 dataset, sha1, version):
+    def __init__(self, eid, username, hostname, config, exp_date, label,
+                 dataset, sha1, version, train_events, valid_events, test_events):
         super(Experiment, self).__init__()
-        self.task = task
         self.train_events = train_events if train_events is not None else []
         self.valid_events = valid_events if valid_events is not None else []
         self.test_events = test_events if test_events is not None else []
@@ -119,16 +118,13 @@ class ExperimentSet(object):
         data_groups = {}
         if len(self.data) == 0:
             raise RuntimeError('Trying to group empty experiment set')
-        task = self.data[0].get_prop('task')
         for datum in self.data:
-            if datum.get_prop('task') != task:
-                raise RuntimeError('Should not be grouping two experiments from different tasks')
             field = datum.get_prop(key)
             if field not in data_groups:
                 data_groups[field] = ExperimentSet([datum])
             else:
                 data_groups[field].add_data(datum)
-        return ExperimentGroup(data_groups, key, task)
+        return ExperimentGroup(data_groups, key)
 
     def sort(self, key, reverse=True):
         """
@@ -150,11 +146,10 @@ class ExperimentSet(object):
 
 class ExperimentGroup(object):
     """ a group of resultset objects"""
-    def __init__(self, grouped_experiments, reduction_dim, task):
+    def __init__(self, grouped_experiments, reduction_dim):
         super(ExperimentGroup, self).__init__()
         self.grouped_experiments = grouped_experiments
         self.reduction_dim = reduction_dim
-        self.task = task
 
     def items(self):
         return self.grouped_experiments.items()
@@ -198,6 +193,8 @@ class ExperimentGroup(object):
                         else:
                             data[reduction_dim_value][dataset][result.metric].append(result.value)
         # for each reduction_dim_value, only one dataset can have metrics, the others are empty
+        from pprint import pprint
+        pprint(data)
         _data = {reduction_dim_value: {} for reduction_dim_value in data}
         for reduction_dim_value in data:
             for dataset in data[reduction_dim_value]:
@@ -229,11 +226,10 @@ class ExperimentGroup(object):
                         'num_exps': num_experiments[reduction_dim_value][dataset],
                         **prop_dict
                     }
-                    agr = deepcopy(ExperimentAggregate(task=self.task, **d))
+                    agr = deepcopy(ExperimentAggregate(**d))
                     for metric in data[reduction_dim_value][dataset]:
                         for fn_name, fn in aggregate_fns.items():
                             agg_value = fn(data[reduction_dim_value][dataset][metric])
-                            print(metric, dataset, fn_name, data[reduction_dim_value][dataset][metric], agg_value)
                             values[fn_name] = agg_value
                         agr.add_result(deepcopy(AggregateResult(metric=metric, values=values)), event_type=event_type)
                     aggregate_resultset.add_data(agr)
@@ -242,12 +238,11 @@ class ExperimentGroup(object):
 
 class ExperimentAggregate(object):
     """ a result data point"""
-    def __init__(self, task, train_events=[], valid_events=[], test_events=[], **kwargs):
+    def __init__(self, train_events=[], valid_events=[], test_events=[], **kwargs):
         super(ExperimentAggregate, self).__init__()
         self.train_events = train_events if train_events is not None else []
         self.valid_events = valid_events if valid_events is not None else []
         self.test_events = test_events if test_events is not None else []
-        self.task = task
         self.num_exps = kwargs.get('num_exps')
         self.eid = kwargs.get('eid')
         self.username = kwargs.get('username')
@@ -316,41 +311,16 @@ class ExperimentAggregateSet(object):
         return ExperimentSet(data=final_results)
 
 
-class TaskDatasetSummary(object):
-    """ How many users experimented with this dataset in the given task?"""
-    def __init__(self, task, dataset, experiment_set, user_num_exps=None):
-        super(TaskDatasetSummary, self).__init__()
-        self.task = task
+class DatasetSummary(object):
+    """ How many users experimented with this dataset?"""
+    def __init__(self, dataset, experiment_set, user_num_exps=None):
+        super(DatasetSummary, self).__init__()
         self.dataset = dataset
         if user_num_exps is not None:
             self.user_num_exps = user_num_exps
         else:
             exp_groups = experiment_set.groupby('username')
-            self.user_num_exps = {username: len(exp_group)for username, exp_group in exp_groups}
-
-
-class TaskDatasetSummarySet(object):
-    """ a list of TaskDatasetSummary objects."""
-    def __init__(self, task, data):
-        self.task = task
-        self.data = data
-
-    def groupby(self):
-        """ group the TaskDatasetSummary objects. """
-        d = {}
-        for tdsummary in self.data:
-            dataset = tdsummary.dataset
-            d[dataset] = []
-            for username in tdsummary.user_num_exps:
-                d[dataset].append((username, tdsummary.user_num_exps[username]))
-
-        return TaskSummary(self.task, d)
-
-
-class TaskSummary(object):
-    def __init__(self, task, summary):
-        self.task = task
-        self.summary = summary
+            self.summary = {username: len(exp_group)for username, exp_group in exp_groups}
 
 
 class BackendResponse(object):
@@ -392,7 +362,7 @@ def json2log(events, log_file):
             wf.write(json.dumps(event)+'\n')
 
 
-def get_experiment_label(config_obj, task, **kwargs):
+def get_experiment_label(config_obj, dataset, **kwargs):
     if kwargs.get('label', None) is not None:
         return kwargs['label']
     if 'description' in config_obj:
@@ -400,7 +370,7 @@ def get_experiment_label(config_obj, task, **kwargs):
     else:
         model_type = config_obj.get('model_type', 'default')
         backend = config_obj.get('backend', 'tensorflow')
-        return "{}-{}-{}".format(task, backend, model_type)
+        return "{}-{}-{}".format(dataset, backend, model_type)
 
 
 def safe_get(_object, key, alt):
@@ -491,23 +461,23 @@ def serialize_experiment_list(exps):
     return results
 
 
-def serialize_task_summary(task_summary):
+def serialize_dataset_summary(dataset_summary):
     """
-    serialize a TaskSummary object for consumption by swagger client
-    :param task_summary:
+    serialize a DatasetSummary object for consumption by swagger client
+    :param dataset_summary:
     :return:
     """
-    if is_error(task_summary):
-        return abort(500, task_summary.message)
-    return ServerTaskSummary(**task_summary.__dict__)
+    if is_error(dataset_summary):
+        return abort(500, dataset_summary.message)
+    return ServerDatasetSummary(**dataset_summary.__dict__)
 
 
-def serialize_task_summary_list(task_summaries):
-    _task_summaries = []
-    for task_summary in task_summaries:
-        if not is_error(task_summary):  # should we abort if we cant get summary for a task in the database?
-            _task_summaries.append(ServerTaskSummary(**task_summary.__dict__))
-    return _task_summaries
+def serialize_dataset_summary_list(dataset_summaries):
+    _dataset_summaries = []
+    for dataset_summary in dataset_summaries:
+        if not is_error(dataset_summary):  # should we abort if we cant get summary for a dataset in the database?
+            _dataset_summaries.append(ServerDatasetSummary(**dataset_summary.__dict__))
+    return _dataset_summaries
 
 
 def serialize_dict(config):
@@ -559,7 +529,6 @@ def client_experiment_to_put_result_consumable(exp):
     valid_events = pack_results_in_events(exp.valid_events)
     test_events = pack_results_in_events(exp.test_events)
     config = exp.config
-    task = exp.task
     extra_args = {
         'sha1': exp.sha1,
         'dataset': exp.dataset,
@@ -568,8 +537,8 @@ def client_experiment_to_put_result_consumable(exp):
         'exp_date': exp.exp_date,
         'label': exp.label
     }
-    put_result_consumable = namedtuple('put_result_consumable', ['task', 'config_obj', 'events_obj', 'extra_args'])
-    return put_result_consumable(task=task, config_obj=json.loads(config),
+    put_result_consumable = namedtuple('put_result_consumable', ['config_obj', 'events_obj', 'extra_args'])
+    return put_result_consumable(config_obj=json.loads(config),
                                  events_obj=train_events+valid_events+test_events,
                                  extra_args=extra_args)
 

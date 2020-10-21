@@ -33,11 +33,10 @@ class Experiment(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'task': 'str',
+        'dataset': 'str',
         'eid': 'str',
         'sha1': 'str',
         'config': 'str',
-        'dataset': 'str',
         'username': 'str',
         'hostname': 'str',
         'exp_date': 'str',
@@ -49,11 +48,10 @@ class Experiment(object):
     }
 
     attribute_map = {
-        'task': 'task',
+        'dataset': 'dataset',
         'eid': 'eid',
         'sha1': 'sha1',
         'config': 'config',
-        'dataset': 'dataset',
         'username': 'username',
         'hostname': 'hostname',
         'exp_date': 'exp_date',
@@ -64,14 +62,13 @@ class Experiment(object):
         'test_events': 'test_events'
     }
 
-    def __init__(self, task=None, eid=None, sha1=None, config=None, dataset=None, username=None, hostname=None, exp_date=None, label=None, version=None, train_events=None, valid_events=None, test_events=None):  # noqa: E501
+    def __init__(self, dataset=None, eid=None, sha1=None, config=None, username=None, hostname=None, exp_date=None, label=None, version=None, train_events=None, valid_events=None, test_events=None):  # noqa: E501
         """Experiment - a model defined in Swagger"""  # noqa: E501
 
-        self._task = None
+        self._dataset = None
         self._eid = None
         self._sha1 = None
         self._config = None
-        self._dataset = None
         self._username = None
         self._hostname = None
         self._exp_date = None
@@ -82,16 +79,13 @@ class Experiment(object):
         self._test_events = None
         self.discriminator = None
 
-        if task is not None:
-            self.task = task
+        self.dataset = dataset
         if eid is not None:
             self.eid = eid
         if sha1 is not None:
             self.sha1 = sha1
         if config is not None:
             self.config = config
-        if dataset is not None:
-            self.dataset = dataset
         if username is not None:
             self.username = username
         if hostname is not None:
@@ -110,25 +104,27 @@ class Experiment(object):
             self.test_events = test_events
 
     @property
-    def task(self):
-        """Gets the task of this Experiment.  # noqa: E501
+    def dataset(self):
+        """Gets the dataset of this Experiment.  # noqa: E501
 
 
-        :return: The task of this Experiment.  # noqa: E501
+        :return: The dataset of this Experiment.  # noqa: E501
         :rtype: str
         """
-        return self._task
+        return self._dataset
 
-    @task.setter
-    def task(self, task):
-        """Sets the task of this Experiment.
+    @dataset.setter
+    def dataset(self, dataset):
+        """Sets the dataset of this Experiment.
 
 
-        :param task: The task of this Experiment.  # noqa: E501
+        :param dataset: The dataset of this Experiment.  # noqa: E501
         :type: str
         """
+        if dataset is None:
+            raise ValueError("Invalid value for `dataset`, must not be `None`")  # noqa: E501
 
-        self._task = task
+        self._dataset = dataset
 
     @property
     def eid(self):
@@ -192,27 +188,6 @@ class Experiment(object):
         """
 
         self._config = config
-
-    @property
-    def dataset(self):
-        """Gets the dataset of this Experiment.  # noqa: E501
-
-
-        :return: The dataset of this Experiment.  # noqa: E501
-        :rtype: str
-        """
-        return self._dataset
-
-    @dataset.setter
-    def dataset(self, dataset):
-        """Sets the dataset of this Experiment.
-
-
-        :param dataset: The dataset of this Experiment.  # noqa: E501
-        :type: str
-        """
-
-        self._dataset = dataset
 
     @property
     def username(self):

@@ -36,7 +36,7 @@ def flatten(_list):
     return [item for sublist in _list for item in sublist]
 
 
-def to_swagger_experiment(task, config, log, **kwargs):
+def to_swagger_experiment(config, log, **kwargs):
     if type(log) is not str:  # this is a log object and not a file
         events_obj = log
     else:
@@ -55,7 +55,7 @@ def to_swagger_experiment(task, config, log, **kwargs):
     else:
         config = json.dumps(read_config_file(config))
     d = kwargs
-    d.update({'task': task,
+    d.update({
               'config': config,
               'train_events': train_events,
               'valid_events': valid_events,
