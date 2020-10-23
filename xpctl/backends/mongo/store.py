@@ -158,7 +158,8 @@ class MongoRepo(ExperimentRepo):
         reduction_dim = reduction_dim if reduction_dim is not None else 'sha1'
         if 'dataset' in param_dict.keys():
             value = self.get_related_datasets(param_dict['dataset'])
-            param_dict['dataset'] = value
+            if value:
+                param_dict['dataset'] = value
         query = self._update_query({}, **param_dict)
         all_results = list(self.coll.find(query))
         if not all_results:
