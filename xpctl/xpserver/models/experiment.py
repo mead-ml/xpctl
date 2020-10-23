@@ -16,19 +16,17 @@ class Experiment(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, task=None, eid=None, sha1=None, config=None, dataset=None, username=None, hostname=None, exp_date=None, label=None, version=None, train_events=None, valid_events=None, test_events=None):  # noqa: E501
+    def __init__(self, dataset=None, eid=None, sha1=None, config=None, username=None, hostname=None, exp_date=None, label=None, version=None, train_events=None, valid_events=None, test_events=None):  # noqa: E501
         """Experiment - a model defined in Swagger
 
-        :param task: The task of this Experiment.  # noqa: E501
-        :type task: str
+        :param dataset: The dataset of this Experiment.  # noqa: E501
+        :type dataset: str
         :param eid: The eid of this Experiment.  # noqa: E501
         :type eid: str
         :param sha1: The sha1 of this Experiment.  # noqa: E501
         :type sha1: str
         :param config: The config of this Experiment.  # noqa: E501
         :type config: str
-        :param dataset: The dataset of this Experiment.  # noqa: E501
-        :type dataset: str
         :param username: The username of this Experiment.  # noqa: E501
         :type username: str
         :param hostname: The hostname of this Experiment.  # noqa: E501
@@ -47,11 +45,10 @@ class Experiment(Model):
         :type test_events: List[Result]
         """
         self.swagger_types = {
-            'task': str,
+            'dataset': str,
             'eid': str,
             'sha1': str,
             'config': str,
-            'dataset': str,
             'username': str,
             'hostname': str,
             'exp_date': str,
@@ -63,11 +60,10 @@ class Experiment(Model):
         }
 
         self.attribute_map = {
-            'task': 'task',
+            'dataset': 'dataset',
             'eid': 'eid',
             'sha1': 'sha1',
             'config': 'config',
-            'dataset': 'dataset',
             'username': 'username',
             'hostname': 'hostname',
             'exp_date': 'exp_date',
@@ -78,11 +74,10 @@ class Experiment(Model):
             'test_events': 'test_events'
         }
 
-        self._task = task
+        self._dataset = dataset
         self._eid = eid
         self._sha1 = sha1
         self._config = config
-        self._dataset = dataset
         self._username = username
         self._hostname = hostname
         self._exp_date = exp_date
@@ -104,25 +99,27 @@ class Experiment(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def task(self):
-        """Gets the task of this Experiment.
+    def dataset(self):
+        """Gets the dataset of this Experiment.
 
 
-        :return: The task of this Experiment.
+        :return: The dataset of this Experiment.
         :rtype: str
         """
-        return self._task
+        return self._dataset
 
-    @task.setter
-    def task(self, task):
-        """Sets the task of this Experiment.
+    @dataset.setter
+    def dataset(self, dataset):
+        """Sets the dataset of this Experiment.
 
 
-        :param task: The task of this Experiment.
-        :type task: str
+        :param dataset: The dataset of this Experiment.
+        :type dataset: str
         """
+        if dataset is None:
+            raise ValueError("Invalid value for `dataset`, must not be `None`")  # noqa: E501
 
-        self._task = task
+        self._dataset = dataset
 
     @property
     def eid(self):
@@ -186,27 +183,6 @@ class Experiment(Model):
         """
 
         self._config = config
-
-    @property
-    def dataset(self):
-        """Gets the dataset of this Experiment.
-
-
-        :return: The dataset of this Experiment.
-        :rtype: str
-        """
-        return self._dataset
-
-    @dataset.setter
-    def dataset(self, dataset):
-        """Sets the dataset of this Experiment.
-
-
-        :param dataset: The dataset of this Experiment.
-        :type dataset: str
-        """
-
-        self._dataset = dataset
 
     @property
     def username(self):

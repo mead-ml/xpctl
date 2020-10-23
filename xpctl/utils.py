@@ -36,7 +36,7 @@ def flatten(_list):
     return [item for sublist in _list for item in sublist]
 
 
-def to_swagger_experiment(task, config, log, **kwargs):
+def to_swagger_experiment(config, log, **kwargs):
     if type(log) is not str:  # this is a log object and not a file
         events_obj = log
     else:
@@ -54,8 +54,14 @@ def to_swagger_experiment(task, config, log, **kwargs):
         config = json.dumps(config)
     else:
         config = json.dumps(read_config_file(config))
+    if 'dataset' not in kwargs:
+        try:
+            dataset = json.loads(config)['dataset']
+            kwargs.update({'dataset': dataset})
+        except KeyError:
+            raise RuntimeError('dataset must be provided')
     d = kwargs
-    d.update({'task': task,
+    d.update({
               'config': config,
               'train_events': train_events,
               'valid_events': valid_events,

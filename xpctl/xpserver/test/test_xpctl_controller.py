@@ -5,10 +5,10 @@ from __future__ import absolute_import
 from flask import json
 from six import BytesIO
 
+from xpctl.xpserver.models.dataset_summary import DatasetSummary  # noqa: E501
 from xpctl.xpserver.models.experiment import Experiment  # noqa: E501
 from xpctl.xpserver.models.experiment_aggregate import ExperimentAggregate  # noqa: E501
 from xpctl.xpserver.models.response import Response  # noqa: E501
-from xpctl.xpserver.models.task_summary import TaskSummary  # noqa: E501
 from xpctl.xpserver.test import BaseTestCase
 
 
@@ -21,7 +21,18 @@ class TestXpctlController(BaseTestCase):
         get config for sha1
         """
         response = self.client.open(
-            '/v2/config2json/{task}/{sha1}'.format(task='task_example', sha1='sha1_example'),
+            '/v2/config2json/{sha1}'.format(sha1='sha1_example'),
+            method='GET')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_dataset_summary(self):
+        """Test case for dataset_summary
+
+        get summary for dataset
+        """
+        response = self.client.open(
+            '/v2/summary/{dataset}/'.format(dataset='dataset_example'),
             method='GET')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
@@ -34,7 +45,7 @@ class TestXpctlController(BaseTestCase):
         query_string = [('event_type', 'event_type_example'),
                         ('metric', 'metric_example')]
         response = self.client.open(
-            '/v2/{task}/{eid}'.format(task='task_example', eid='eid_example'),
+            '/v2/{eid}'.format(eid='eid_example'),
             method='GET',
             query_string=query_string)
         self.assert200(response,
@@ -46,7 +57,7 @@ class TestXpctlController(BaseTestCase):
         get model loc for experiment
         """
         response = self.client.open(
-            '/v2/getmodelloc/{task}/{eid}'.format(task='task_example', eid='eid_example'),
+            '/v2/getmodelloc/{eid}'.format(eid='eid_example'),
             method='GET')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
@@ -56,9 +67,9 @@ class TestXpctlController(BaseTestCase):
 
         Find results by property and value
         """
-        query_string = [('eid', 'eid_example'),
+        query_string = [('dataset', 'dataset_example'),
+                        ('eid', 'eid_example'),
                         ('sha1', 'sha1_example'),
-                        ('dataset', 'dataset_example'),
                         ('label', 'label_example'),
                         ('reduction_dim', 'reduction_dim_example'),
                         ('metric', 'metric_example'),
@@ -66,7 +77,7 @@ class TestXpctlController(BaseTestCase):
                         ('numexp_reduction_dim', 56),
                         ('event_type', 'event_type_example')]
         response = self.client.open(
-            '/v2/results/{task}'.format(task='task_example'),
+            '/v2/results/',
             method='GET',
             query_string=query_string)
         self.assert200(response,
@@ -86,7 +97,7 @@ class TestXpctlController(BaseTestCase):
                         ('sort', 'sort_example'),
                         ('event_type', 'event_type_example')]
         response = self.client.open(
-            '/v2/find/{task}'.format(task='task_example'),
+            '/v2/find/',
             method='GET',
             query_string=query_string)
         self.assert200(response,
@@ -101,7 +112,7 @@ class TestXpctlController(BaseTestCase):
         query_string = [('user', 'user_example'),
                         ('label', 'label_example')]
         response = self.client.open(
-            '/v2/put/{task}'.format(task='task_example'),
+            '/v2/put/',
             method='POST',
             data=json.dumps(experiment),
             content_type='application/json',
@@ -115,7 +126,7 @@ class TestXpctlController(BaseTestCase):
         delete an experiment from the database
         """
         response = self.client.open(
-            '/v2/delete/{task}/{eid}'.format(task='task_example', eid='eid_example'),
+            '/v2/delete/{eid}'.format(eid='eid_example'),
             method='GET',
             content_type='application/json')
         self.assert200(response,
@@ -124,21 +135,10 @@ class TestXpctlController(BaseTestCase):
     def test_summary(self):
         """Test case for summary
 
-        get summary for task
+        get summary for database
         """
         response = self.client.open(
             '/v2/summary/',
-            method='GET')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
-    def test_task_summary(self):
-        """Test case for task_summary
-
-        get summary for task
-        """
-        response = self.client.open(
-            '/v2/summary/{task}/'.format(task='task_example'),
             method='GET')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
@@ -151,7 +151,7 @@ class TestXpctlController(BaseTestCase):
         query_string = [('prop', 'prop_example'),
                         ('value', 'value_example')]
         response = self.client.open(
-            '/v2/update/{task}/{eid}/'.format(task='task_example', eid='eid_example'),
+            '/v2/update/{eid}/'.format(eid='eid_example'),
             method='GET',
             content_type='application/json',
             query_string=query_string)

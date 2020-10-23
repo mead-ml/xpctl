@@ -33,11 +33,10 @@ class ExperimentAggregate(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'task': 'str',
+        'dataset': 'str',
         'eid': 'str',
         'sha1': 'str',
         'config': 'str',
-        'dataset': 'str',
         'username': 'str',
         'hostname': 'str',
         'exp_date': 'date',
@@ -50,11 +49,10 @@ class ExperimentAggregate(object):
     }
 
     attribute_map = {
-        'task': 'task',
+        'dataset': 'dataset',
         'eid': 'eid',
         'sha1': 'sha1',
         'config': 'config',
-        'dataset': 'dataset',
         'username': 'username',
         'hostname': 'hostname',
         'exp_date': 'exp_date',
@@ -66,14 +64,13 @@ class ExperimentAggregate(object):
         'test_events': 'test_events'
     }
 
-    def __init__(self, task=None, eid=None, sha1=None, config=None, dataset=None, username=None, hostname=None, exp_date=None, label=None, version=None, num_exps=None, train_events=None, valid_events=None, test_events=None):  # noqa: E501
+    def __init__(self, dataset=None, eid=None, sha1=None, config=None, username=None, hostname=None, exp_date=None, label=None, version=None, num_exps=None, train_events=None, valid_events=None, test_events=None):  # noqa: E501
         """ExperimentAggregate - a model defined in Swagger"""  # noqa: E501
 
-        self._task = None
+        self._dataset = None
         self._eid = None
         self._sha1 = None
         self._config = None
-        self._dataset = None
         self._username = None
         self._hostname = None
         self._exp_date = None
@@ -85,16 +82,14 @@ class ExperimentAggregate(object):
         self._test_events = None
         self.discriminator = None
 
-        if task is not None:
-            self.task = task
+        if dataset is not None:
+            self.dataset = dataset
         if eid is not None:
             self.eid = eid
         if sha1 is not None:
             self.sha1 = sha1
         if config is not None:
             self.config = config
-        if dataset is not None:
-            self.dataset = dataset
         if username is not None:
             self.username = username
         if hostname is not None:
@@ -115,25 +110,25 @@ class ExperimentAggregate(object):
             self.test_events = test_events
 
     @property
-    def task(self):
-        """Gets the task of this ExperimentAggregate.  # noqa: E501
+    def dataset(self):
+        """Gets the dataset of this ExperimentAggregate.  # noqa: E501
 
 
-        :return: The task of this ExperimentAggregate.  # noqa: E501
+        :return: The dataset of this ExperimentAggregate.  # noqa: E501
         :rtype: str
         """
-        return self._task
+        return self._dataset
 
-    @task.setter
-    def task(self, task):
-        """Sets the task of this ExperimentAggregate.
+    @dataset.setter
+    def dataset(self, dataset):
+        """Sets the dataset of this ExperimentAggregate.
 
 
-        :param task: The task of this ExperimentAggregate.  # noqa: E501
+        :param dataset: The dataset of this ExperimentAggregate.  # noqa: E501
         :type: str
         """
 
-        self._task = task
+        self._dataset = dataset
 
     @property
     def eid(self):
@@ -197,27 +192,6 @@ class ExperimentAggregate(object):
         """
 
         self._config = config
-
-    @property
-    def dataset(self):
-        """Gets the dataset of this ExperimentAggregate.  # noqa: E501
-
-
-        :return: The dataset of this ExperimentAggregate.  # noqa: E501
-        :rtype: str
-        """
-        return self._dataset
-
-    @dataset.setter
-    def dataset(self, dataset):
-        """Sets the dataset of this ExperimentAggregate.
-
-
-        :param dataset: The dataset of this ExperimentAggregate.  # noqa: E501
-        :type: str
-        """
-
-        self._dataset = dataset
 
     @property
     def username(self):

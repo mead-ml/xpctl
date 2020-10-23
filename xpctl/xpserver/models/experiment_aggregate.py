@@ -16,19 +16,17 @@ class ExperimentAggregate(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, task=None, eid=None, sha1=None, config=None, dataset=None, username=None, hostname=None, exp_date=None, label=None, version=None, num_exps=None, train_events=None, valid_events=None, test_events=None):  # noqa: E501
+    def __init__(self, dataset=None, eid=None, sha1=None, config=None, username=None, hostname=None, exp_date=None, label=None, version=None, num_exps=None, train_events=None, valid_events=None, test_events=None):  # noqa: E501
         """ExperimentAggregate - a model defined in Swagger
 
-        :param task: The task of this ExperimentAggregate.  # noqa: E501
-        :type task: str
+        :param dataset: The dataset of this ExperimentAggregate.  # noqa: E501
+        :type dataset: str
         :param eid: The eid of this ExperimentAggregate.  # noqa: E501
         :type eid: str
         :param sha1: The sha1 of this ExperimentAggregate.  # noqa: E501
         :type sha1: str
         :param config: The config of this ExperimentAggregate.  # noqa: E501
         :type config: str
-        :param dataset: The dataset of this ExperimentAggregate.  # noqa: E501
-        :type dataset: str
         :param username: The username of this ExperimentAggregate.  # noqa: E501
         :type username: str
         :param hostname: The hostname of this ExperimentAggregate.  # noqa: E501
@@ -49,11 +47,10 @@ class ExperimentAggregate(Model):
         :type test_events: List[AggregateResult]
         """
         self.swagger_types = {
-            'task': str,
+            'dataset': str,
             'eid': str,
             'sha1': str,
             'config': str,
-            'dataset': str,
             'username': str,
             'hostname': str,
             'exp_date': date,
@@ -66,11 +63,10 @@ class ExperimentAggregate(Model):
         }
 
         self.attribute_map = {
-            'task': 'task',
+            'dataset': 'dataset',
             'eid': 'eid',
             'sha1': 'sha1',
             'config': 'config',
-            'dataset': 'dataset',
             'username': 'username',
             'hostname': 'hostname',
             'exp_date': 'exp_date',
@@ -82,11 +78,10 @@ class ExperimentAggregate(Model):
             'test_events': 'test_events'
         }
 
-        self._task = task
+        self._dataset = dataset
         self._eid = eid
         self._sha1 = sha1
         self._config = config
-        self._dataset = dataset
         self._username = username
         self._hostname = hostname
         self._exp_date = exp_date
@@ -109,25 +104,25 @@ class ExperimentAggregate(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def task(self):
-        """Gets the task of this ExperimentAggregate.
+    def dataset(self):
+        """Gets the dataset of this ExperimentAggregate.
 
 
-        :return: The task of this ExperimentAggregate.
+        :return: The dataset of this ExperimentAggregate.
         :rtype: str
         """
-        return self._task
+        return self._dataset
 
-    @task.setter
-    def task(self, task):
-        """Sets the task of this ExperimentAggregate.
+    @dataset.setter
+    def dataset(self, dataset):
+        """Sets the dataset of this ExperimentAggregate.
 
 
-        :param task: The task of this ExperimentAggregate.
-        :type task: str
+        :param dataset: The dataset of this ExperimentAggregate.
+        :type dataset: str
         """
 
-        self._task = task
+        self._dataset = dataset
 
     @property
     def eid(self):
@@ -191,27 +186,6 @@ class ExperimentAggregate(Model):
         """
 
         self._config = config
-
-    @property
-    def dataset(self):
-        """Gets the dataset of this ExperimentAggregate.
-
-
-        :return: The dataset of this ExperimentAggregate.
-        :rtype: str
-        """
-        return self._dataset
-
-    @dataset.setter
-    def dataset(self, dataset):
-        """Sets the dataset of this ExperimentAggregate.
-
-
-        :param dataset: The dataset of this ExperimentAggregate.
-        :type dataset: str
-        """
-
-        self._dataset = dataset
 
     @property
     def username(self):

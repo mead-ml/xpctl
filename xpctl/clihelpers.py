@@ -102,27 +102,25 @@ def write_to_config_file(config_obj, filename):
     write_config_file(config_obj, filename)
 
 
-def task_summary_to_df(tasksummary):
+def dataset_summary_to_df(dataset_summary):
     def identity(x): return x
-    summary = tasksummary.summary
+    summary = dataset_summary.summary
     all_results = []
-    for dataset in summary:
-        for user, num_exps in summary[dataset]:
-            all_results.append([user, dataset, num_exps])
-    return pd.DataFrame(all_results, columns=['user', 'dataset', 'num_exps']).groupby(['user', 'dataset'])\
+    for user, num_exps in summary.items():
+        all_results.append([user, num_exps])
+    return pd.DataFrame(all_results, columns=['user', 'num_exps']).groupby(['user'])\
         .agg([identity]).rename(columns={'identity': ''})
 
 
-def task_summaries_to_df(tasksummaries):
+def dataset_summaries_to_df(dataset_summaries):
     def identity(x): return x
     all_results = []
-    for tasksummary in tasksummaries:
-        task = tasksummary.task
-        summary = tasksummary.summary
-        for dataset in summary:
-            for user, num_exps in summary[dataset]:
-                all_results.append([task, user, dataset, num_exps])
-    return pd.DataFrame(all_results, columns=['task', 'user', 'dataset', 'num_exps']).groupby(['task', 'user', 'dataset'])\
+    for dataset_summary in dataset_summaries:
+        dataset = dataset_summary.dataset
+        summary = dataset_summary.summary
+        for user, num_exps in summary.items():
+            all_results.append([user, dataset, num_exps])
+    return pd.DataFrame(all_results, columns=['user', 'dataset', 'num_exps']).groupby(['user', 'dataset'])\
         .agg([identity]).rename(columns={'identity': ''})
 
 

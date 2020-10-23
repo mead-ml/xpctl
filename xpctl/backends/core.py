@@ -14,52 +14,48 @@ class ExperimentRepo(object):
     def __init__(self):
         super(ExperimentRepo, self).__init__()
 
-    def get_task_names(self):
+    def get_dataset_names(self):
         """Get the names of all tasks in the repository
 
         :return: A list of tasks
         """
         pass
 
-    def config2dict(self, task, sha1):
+    def config2json(self, sha1):
         """Convert a configuration stored in the repository to a string
 
-        :param task: (``str``) The task name
         :param sha1: (``str``) The sha1 of the configuration
         :return: (``dict``) The configuration
         """
         pass
 
     @staticmethod
-    def create_repo(dbhost, dbport, user, passwd, dbtype='mongo'):
+    def create_repo(dbhost, user, passwd, dbtype='mongo', **kwargs):
         """Create a MongoDB-backed repository
 
         :param dbtype: (``str``) The database type
         :param dbhost: (``str``) The host name
-        :param dbport: (``str``) The port
         :param user: (``str``) The user
         :param passwd: (``str``)The password
         :return: A MongoDB/Sql-backed repository
         """
         if dbtype == 'mongo':
             from xpctl.backends.mongo.store import MongoRepo
-            return MongoRepo(dbhost, int(dbport), user, passwd)
+            return MongoRepo(dbhost, user, passwd, **kwargs)
         else:
             from xpctl.backends.sql.store import SQLRepo
-            return SQLRepo(type=dbtype, host=dbhost, port=dbport, user=user, passwd=passwd)
+            return SQLRepo(type=dbtype, host=dbhost, port=kwargs['dbport'], user=user, passwd=passwd)
 
-    def get_model_location(self, task, eid):
+    def get_model_location(self, eid):
         """Get the physical location of the model specified by this experiment id
 
-        :param task: (``str``) The task name
         :param eid: The identifier of the experiment
         :return: (``str``) The model location
         """
         pass
 
-    def get_experiment_details(self, task, eid, event_type, metric):
+    def get_experiment_details(self, eid, event_type, metric):
         """Get detailed description for an experiment
-        :param task: (``str``) The task name
         :param eid: The identifier of the experiment
         :param event_type: (List[``str``]) event types to listen for
         :param metric: (List[``str``]) The metric(s) to use
@@ -67,9 +63,8 @@ class ExperimentRepo(object):
         """
         pass
 
-    def get_results(self, task, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
+    def get_results(self, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
         """Get results from the database
-        :param task: (``str``) The taskname
         :param param_dict: (``dict``) The dict of parameters for query
         :param reduction_dim: (``str``) The property on which the results will be reduced
         :param metric: (``str``) The metric(s) to use
@@ -80,7 +75,7 @@ class ExperimentRepo(object):
         """
         pass
 
-    def task_summary(self, task):
+    def dataset_summary(self, dataset):
         """Summary for a task: What datasets were used? How many times each dataset was used?
         :param task: (``str``) Task name
         :return xpctl.backend.data.TaskSummary
@@ -94,20 +89,18 @@ class ExperimentRepo(object):
         """
         pass
 
-    def find_experiments(self, task, prop, value):
+    def find_experiments(self, prop, value):
         """
         find experiments by a property, eg: dataset
-        :param task: (``str``) task name
         :param prop: (``str``) a property of an experiment, eg: dataset, label
         :param value: (``str``) value for the property
         :return: List[xpctl.backend.data.Experiment]
         """
         pass
 
-    def update_prop(self, task, eid, prop, value):
+    def update_prop(self, eid, prop, value):
         """
         Update a property(label, username etc) for an experiment
-        :param task: (``str``) task name
         :param eid: The identifier for this record
         :param prop: (``str``) property to change
         :param value: (``str``) the value of the property
@@ -115,26 +108,23 @@ class ExperimentRepo(object):
         """
         raise NotImplemented("Base ExperimentRepo events are immutable")
 
-    def remove_experiment(self, task, eid):
+    def remove_experiment(self, eid):
         """Remove a record specified by this id
-        :param task: (``str``) The task name for this record
         :param eid: The identifier for this record
         :return: Union[xpctl.backend.data.Success, xpctl.backend.data.Error]
         """
         raise NotImplemented("Base ExperimentRepo tasks are immutable")
 
-    def put_result(self, task, experiment):
-        """Put tan experiment in the database
+    def put_result(self, experiment):
+        """Put an experiment in the database
 
-        :param task: (``str``) The task name
         :param experiment: xpctl.backend.data.Experiment
         :return: Union[xpctl.backend.data.Success, xpctl.backend.data.Error]
         """
         pass
 
-    def list_results(self, task, param_dict, user, metric, sort, event_type):
+    def list_results(self, param_dict, user, metric, sort, event_type):
         """Get results from the database
-        :param task: (``str``) The taskname
         :param param_dict: (``dict``) The dict of parameters for query
         :param user: List[``str``)] filter by users
         :param metric: (``str``) The metric(s) to use

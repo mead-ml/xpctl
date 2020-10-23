@@ -9,7 +9,7 @@ from mead.utils import hash_config
 from baseline.version import __version__
 from xpctl.backends.backend import log2json, get_experiment_label, METRICS_SORT_ASCENDING, safe_get, \
     client_experiment_to_put_result_consumable, write_experiment, aggregate_results
-from xpctl.backends.backend import BackendError, BackendSuccess, TaskDatasetSummary, TaskDatasetSummarySet, Experiment, Result, \
+from xpctl.backends.backend import BackendError, BackendSuccess, DatasetSummary, DatasetSummarySet, Experiment, Result, \
     ExperimentSet, EVENT_TYPES
 from baseline.utils import unzip_files, read_config_file
 import shutil
@@ -281,11 +281,11 @@ class SQLRepo(ExperimentRepo):
         except sql.exc.SQLAlchemyError as e:
             return BackendError(message=str(e))
 
-    def get_task_names(self):
+    def get_dataset_names(self):
         session = self.Session()
         return set([t[0] for t in session.query(SqlExperiment.task).distinct()])
 
-    def task_summary(self, task):
+    def dataset_summary(self, task):
         session = self.Session()
         datasets = [x[0] for x in session.query(SqlExperiment.dataset).distinct()]
         users = [x[0] for x in session.query(SqlExperiment.username).distinct()]
@@ -299,20 +299,20 @@ class SQLRepo(ExperimentRepo):
                              .filter(SqlExperiment.username == user).distinct()])
                 if result != 0:
                     user_num_exps[user] = result
-            store.append(TaskDatasetSummary(task=task, dataset=dataset, experiment_set=None, user_num_exps=user_num_exps))
+            store.append(DatasetSummary(task=task, dataset=dataset, experiment_set=None, user_num_exps=user_num_exps))
         if not store:
             return BackendError('could not get summary for task: [{}]'.format(task))
-        return TaskDatasetSummarySet(task=task, data=store).groupby()
+        return DatasetSummarySet(task=task, data=store).groupby()
 
     def summary(self):
-        tasks = self.get_task_names()
+        tasks = self.get_dataset_names()
         if "system.indexes" in tasks:
             tasks.remove("system.indexes")
-        return [self.task_summary(task) for task in tasks]
+        return [self.dataset_summary(task) for task in tasks]
 
     def dump(self, zipfile='xpctl-sqldump-{}'.format(datetime.datetime.now().isoformat()), task_eids={}):
         """ dump reporting log and config for later consumption. you"""
-        tasks = self.get_task_names() if not task_eids.keys() else list(task_eids.keys())
+        tasks = self.get_dataset_names() if not task_eids.keys() else list(task_eids.keys())
         session = self.Session()
 
         base_dir = '/tmp/xpctldump'

@@ -12,8 +12,8 @@ import random
 import string
 from functools import wraps
 
-TASK = 'test_xpctl'
-HOST = 'localhost:5310/v2'
+DATASET = 'test_xpctl'
+HOST = '0.0.0.0:5310/v2'
 API = None
 
 
@@ -21,9 +21,9 @@ def clean_db(func):
     @wraps(func)
     def clean(*args, **kwargs):
         try:
-            eids = [x.eid for x in API.list_experiments_by_prop(TASK)]
+            eids = [x.eid for x in API.list_experiments_by_prop(dataset=DATASET)]
             for eid in eids:
-                response = API.remove_experiment(TASK, eid)
+                response = API.remove_experiment(eid)
                 if response.response_type == 'error':
                     raise RuntimeError('can not clean db')
         except ApiException:
@@ -42,7 +42,7 @@ def setup():
 
 
 def _put_one_exp(exp):
-    result = API.put_result(TASK, exp)
+    result = API.put_result(exp)
     if result.response_type == 'error':
         raise RuntimeError(result.message)
     else:
@@ -53,6 +53,7 @@ def _put_one_exp(exp):
 def test_put_result_blank(setup):
     """ you can not insert an experiment with no results"""
     exp = Experiment(
+        dataset=DATASET,
         config='{"test": "test"}',
         train_events=[],
         valid_events=[],
@@ -68,13 +69,14 @@ def test_put_result_blank(setup):
 def test_put_result_one(setup):
     """ test a proper insertion"""
     exp = Experiment(
+        dataset=DATASET,
         config='{"test": "test"}',
         train_events=[],
         valid_events=[],
         test_events=[Result(metric='t', tick_type='t', phase='Test', tick=0, value=0.1)]
     )
     eid = _put_one_exp(exp)
-    result = API.list_experiments_by_prop(TASK, eid=eid)
+    result = API.list_experiments_by_prop(eid=eid)
     assert len(result) == 1
 
 
@@ -82,7 +84,7 @@ def test_put_result_one(setup):
 def test_experiment_details(setup):
     date = datetime.datetime.utcnow().isoformat()
     label = 'test_label'
-    dataset = 'test_dataset'
+    dataset = DATASET
     config = '{"test":"test"}'
     username = 'user'
     hostname = 'host'
@@ -99,12 +101,12 @@ def test_experiment_details(setup):
     )
     eid = _put_one_exp(exp)
     try:
-        result = API.list_experiments_by_prop(TASK, eid=eid)
+        result = API.list_experiments_by_prop(eid=eid)
     except ApiException:
         print(eid)
         return False
     exp = result[0]
-    assert exp.dataset == 'test_dataset'
+    assert exp.dataset == DATASET
     assert exp.label == label
     assert (exp.exp_date == date) or (exp.exp_date[:-1] == date)  # sql inserts Z at the end
     assert exp.sha1 == hash_config(json.loads('{"test": "test"}'))
@@ -126,11 +128,11 @@ def _find_by_prop_unique(prop, expected_value):
     """
     try:
         if prop == 'label':
-            result = API.list_experiments_by_prop(TASK, label=expected_value)
+            result = API.list_experiments_by_prop(label=expected_value)
         elif prop == 'dataset':
-            result = API.list_experiments_by_prop(TASK, dataset=expected_value)
+            result = API.list_experiments_by_prop(dataset=expected_value)
         elif prop == 'username':
-            result = API.list_experiments_by_prop(TASK, user=[expected_value])
+            result = API.list_experiments_by_prop(user=[expected_value])
         else:
             return False
         return len(result) == 1
@@ -146,7 +148,7 @@ def test_update_property(setup):
     config = '{"test":"test"}'
     username = _generate_random_string()
     exp = Experiment(
-        dataset='d',
+        dataset=DATASET,
         label='l',
         exp_date=date,
         config=config,
@@ -157,21 +159,19 @@ def test_update_property(setup):
         test_events=[Result(metric='t', tick_type='t', phase='Test', tick=0, value=0.1)]
     )
     eid = _put_one_exp(exp)
-    API.update_property(TASK, eid, 'dataset', dataset)
-    API.update_property(TASK, eid, 'label', label)
-    API.update_property(TASK, eid, 'username', username)
+    API.update_property(eid, 'dataset', dataset)
+    API.update_property(eid, 'label', label)
+    API.update_property(eid, 'username', username)
     assert _find_by_prop_unique(prop='label', expected_value=label)
     assert _find_by_prop_unique(prop='dataset', expected_value=dataset)
     assert _find_by_prop_unique(prop='username', expected_value=username)
 
 
 def _test_list_experiments_by_prop(prop, value, experiments):
-    if prop == 'dataset':
-        results = API.list_experiments_by_prop(TASK, dataset=value)
-    elif prop == 'label':
-        results = API.list_experiments_by_prop(TASK, label=value)
+    if prop == 'label':
+        results = API.list_experiments_by_prop(label=value)
     elif prop == 'username':
-        results = API.list_experiments_by_prop(TASK, user=[value])
+        results = API.list_experiments_by_prop(user=[value])
     else:
         return False
     expected = [exp.eid for exp in experiments if getattr(exp, prop) == value]
@@ -187,7 +187,6 @@ def test_list_experiments_by_prop(setup):
     :return:
     """
     configs = ['{"c1":"c1"}', '{"c2":"c2"}']
-    datasets = ['d1', 'd2']
     labels = ['l1', 'l2']
     users = ['u1', 'u2', 'u3']
     metrics = ['f1', 'acc', 'random']
@@ -195,43 +194,41 @@ def test_list_experiments_by_prop(setup):
     experiments = []
     exp_detail = namedtuple('exp_detail', ['eid', 'sha1', 'dataset', 'label', 'username'])
     for config in configs:
-        for dataset in datasets:
-            for label in labels:
-                for username in users:
-                    result = _put_one_exp(
-                        Experiment(
-                            config=config,
-                            dataset=dataset,
-                            label=label,
-                            username=username,
-                            train_events=[],
-                            valid_events=[],
-                            test_events=test_events
-                        )
+        for label in labels:
+            for username in users:
+                result = _put_one_exp(
+                    Experiment(
+                        config=config,
+                        dataset=DATASET,
+                        label=label,
+                        username=username,
+                        train_events=[],
+                        valid_events=[],
+                        test_events=test_events
                     )
-                    experiments.append(exp_detail(eid=result, sha1=hash_config(json.loads(config)), dataset=dataset,
-                                                  label=label, username=username))
+                )
+                experiments.append(exp_detail(eid=result, sha1=hash_config(json.loads(config)), dataset=DATASET,
+                                              label=label, username=username))
 
     # find by a property and group by different reduction dims
-    for prop, values in {'dataset': datasets, 'label': labels, 'username': users}.items():
+    for prop, values in {'label': labels, 'username': users}.items():
         for value in values:
             assert _test_list_experiments_by_prop(prop=prop, value=value, experiments=experiments)
 
     # test the `users` filter work
-    prop = 'dataset'
-    value = 'd1'
+    value = DATASET
     users = [['u1', 'u2'], ['u1']]
     for user in users:
-        results = API.list_experiments_by_prop(TASK, dataset=value, user=user)
+        results = API.list_experiments_by_prop(dataset=value, user=user)
         result_eids = [x.eid for x in results]
-        expected_eids = [x.eid for x in experiments if x.dataset == 'd1' and x.username in user]
+        expected_eids = [x.eid for x in experiments if x.dataset == DATASET and x.username in user]
         assert set(result_eids) == set(expected_eids)
     # test sort works
     config = configs[0]
     metrics = ['f1', 'acc']
     exp_value = namedtuple('exp_value', ['eid', 'value'])
     experiments = []
-    dataset = _generate_random_string()  # generate a unique dataset
+    label = _generate_random_string()  # generate a unique label
     for value in [0.5, 0.7, 0.8]:
         test_events = [Result(metric=metric, value=value, tick_type='EPOCH', tick=0, phase='Test') for metric in metrics]
         result = _put_one_exp(
@@ -240,28 +237,27 @@ def test_list_experiments_by_prop(setup):
                 train_events=[],
                 valid_events=[],
                 test_events=test_events,
-                dataset=dataset
+                label=label,
+                dataset=DATASET
             )
         )
         experiments.append(exp_value(eid=result, value=value))
-    results = API.list_experiments_by_prop(TASK, dataset=dataset, sort='f1')  # get results only from that
+    results = API.list_experiments_by_prop(label=label, sort='f1')  # get results only from that
     # unique dataset, sort by f1
     _max = experiments[-1]
     assert results[0].eid == _max.eid
 
 
-def _test_reduction_dim_dataset(dataset_value, reduction_dim, experiments):
+def _test_reduction_dim_dataset(reduction_dim, experiments):
     """
     The results from API should return proper groups
-    :param prop:
-    :param value:
     :param reduction_dim:
     :param experiments:
     :return:
     """
-    results = API.get_results_by_prop(TASK, dataset=dataset_value, reduction_dim=reduction_dim)
+    results = API.get_results_by_prop(dataset=DATASET, reduction_dim=reduction_dim)
     expected = {}
-    for item in [getattr(exp, reduction_dim) for exp in experiments if getattr(exp, 'dataset') == dataset_value]:
+    for item in [getattr(exp, reduction_dim) for exp in experiments if getattr(exp, 'dataset') == DATASET]:
         if item not in expected:
             expected[item] = 1
         else:
@@ -279,7 +275,7 @@ def _test_reduction_dim_label(label_value, reduction_dim, experiments):
     :param experiments:
     :return:
     """
-    results = API.get_results_by_prop(TASK, label=label_value, reduction_dim=reduction_dim)
+    results = API.get_results_by_prop(label=label_value, dataset=DATASET, reduction_dim=reduction_dim)
     expected = {}
     for item in [getattr(exp, reduction_dim) for exp in experiments if getattr(exp, 'label') == label_value]:
         if item not in expected:
@@ -299,33 +295,28 @@ def test_get_results_by_prop(setup):
     :return:
     """
     configs = ['{"c1":"c1"}', '{"c2":"c2"}']
-    datasets = ['d1', 'd1', 'd2']
     labels = ['l1', 'l2', 'l2']
     metrics = ['f1', 'acc', 'random']
     test_events = [Result(metric=metric, value=0.5, tick_type='EPOCH', tick=0, phase='Test') for metric in metrics]
     experiments = []
     exp_detail = namedtuple('exp_detail', ['eid', 'sha1', 'dataset', 'label'])
     for config in configs:
-        for dataset in datasets:
-            for label in labels:
-                result = _put_one_exp(
-                    Experiment(
-                        config=config,
-                        dataset=dataset,
-                        label=label,
-                        train_events=[],
-                        valid_events=[],
-                        test_events=test_events
-                    )
+        for label in labels:
+            result = _put_one_exp(
+                Experiment(
+                    config=config,
+                    dataset=DATASET,
+                    label=label,
+                    train_events=[],
+                    valid_events=[],
+                    test_events=test_events
                 )
-                experiments.append(exp_detail(eid=result, sha1=hash_config(json.loads(config)), dataset=dataset,
-                                              label=label))
+            )
+            experiments.append(exp_detail(eid=result, sha1=hash_config(json.loads(config)), label=label,
+                                          dataset=DATASET))
 
     # find by a property and group by different reduction dims
-    for prop, values in {'dataset': datasets, 'label': labels}.items():
+    for prop, values in {'label': labels}.items():
         for value in values:
             for reduction_dim in ['sha1', 'eid', 'label']:
-                if prop == 'dataset':
-                    assert _test_reduction_dim_dataset(dataset_value=value, reduction_dim=reduction_dim, experiments=experiments)
-                else:
-                    assert _test_reduction_dim_label(label_value=value, reduction_dim=reduction_dim, experiments=experiments)
+                assert _test_reduction_dim_label(label_value=value, reduction_dim=reduction_dim, experiments=experiments)
