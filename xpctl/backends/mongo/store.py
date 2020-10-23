@@ -160,6 +160,10 @@ class MongoRepo(ExperimentRepo):
             value = self.get_related_datasets(param_dict['dataset'])
             if value:
                 param_dict['dataset'] = value
+        if 'label' in param_dict.keys():
+            value = self.get_related_labels(param_dict['label'])
+            if value:
+                param_dict['label'] = value
         query = self._update_query({}, **param_dict)
         all_results = list(self.coll.find(query))
         if not all_results:
@@ -285,6 +289,17 @@ class MongoRepo(ExperimentRepo):
                 if d.startswith(dataset):
                     datasets.append(d)
             return datasets
+
+    def get_related_labels(self, label):
+        """
+        similar to get_related datasets, but for labels.
+        :param label:
+        :return:
+        """
+        q = {'label': {'$regex': label, '$options': 'i'}}
+        p = {'label': 1, '_id': 0}
+        labels = [x.get('label') for x in self.coll.find(q, p)]
+        return list(set([x for x in labels if x is not None]))
 
     def get_dataset_names(self):
         q = {}
