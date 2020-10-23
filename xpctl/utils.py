@@ -54,6 +54,12 @@ def to_swagger_experiment(config, log, **kwargs):
         config = json.dumps(config)
     else:
         config = json.dumps(read_config_file(config))
+    if 'dataset' not in kwargs:
+        try:
+            dataset = json.loads(config)['dataset']
+            kwargs.update({'dataset': dataset})
+        except KeyError:
+            raise RuntimeError('dataset must be provided')
     d = kwargs
     d.update({
               'config': config,

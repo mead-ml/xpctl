@@ -59,9 +59,7 @@ class XPCtlReporting(EpochReportingHook):
         """Write the log to the xpctl database"""
         try:
             result = self.api.put_result(
-                self.task,
-                to_swagger_experiment(self.task,
-                                      self.exp_config,
+                to_swagger_experiment(self.exp_config,
                                       self.log,
                                       username=self.username,
                                       label=self.label,

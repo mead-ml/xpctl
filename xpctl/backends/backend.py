@@ -193,8 +193,6 @@ class ExperimentGroup(object):
                         else:
                             data[reduction_dim_value][dataset][result.metric].append(result.value)
         # for each reduction_dim_value, only one dataset can have metrics, the others are empty
-        from pprint import pprint
-        pprint(data)
         _data = {reduction_dim_value: {} for reduction_dim_value in data}
         for reduction_dim_value in data:
             for dataset in data[reduction_dim_value]:
