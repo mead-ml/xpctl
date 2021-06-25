@@ -14,6 +14,7 @@
 
 
 from __future__ import absolute_import
+from xpclient.version import __version__
 
 # import apis into sdk package
 from xpclient.api.xpctl_api import XpctlApi

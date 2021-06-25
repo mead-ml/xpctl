@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 from setuptools import setup, find_packages
-from xpctl import __version__
+from xpclient import __version__
 
 
 class About:
@@ -16,19 +16,8 @@ class About:
 
 
 def read_doc(f_name, new_name=None):
-    """
-    Because our readme is outside of this dir we need to copy it in so
-    that it is picked up by the install.
-    """
-    if new_name is None:
-        new_name = f_name
-    path = os.path.dirname(os.path.realpath(__file__))
-    doc_loc = os.path.normpath(os.path.join(path, '..', f_name))
-    new_loc = os.path.join(path, new_name)
-    if os.path.isfile(doc_loc):
-        shutil.copyfile(doc_loc, new_loc)
-    descript = open(new_loc, 'r').read()
-    return descript
+    with open('README.md', 'r') as rf:
+        return rf.read()
 
 
 def main():
