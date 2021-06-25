@@ -23,9 +23,9 @@ import tempfile
 import six
 from six.moves.urllib.parse import quote
 
-from xpctl.xpclient.configuration import Configuration
-import xpctl.xpclient.models
-from xpctl.xpclient import rest
+from xpclient.configuration import Configuration
+import xpclient.models
+from xpclient import rest
 
 
 class ApiClient(object):

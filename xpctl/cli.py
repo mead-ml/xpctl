@@ -5,13 +5,13 @@ import os
 
 from click_shell import shell
 import click
-from xpctl.xpclient import Configuration
-from xpctl.xpclient.api import XpctlApi
-from xpctl.xpclient import ApiClient
-from xpctl.xpclient.rest import ApiException
+from xpclient import Configuration
+from xpclient.api import XpctlApi
+from xpclient import ApiClient
+from xpclient.rest import ApiException
 from xpctl.clihelpers import experiment_to_df, experiment_aggregate_list_to_df, experiment_list_to_df, \
     task_summary_to_df, task_summaries_to_df, read_config_stream
-from xpctl.utils import to_swagger_experiment, store_model, write_config_file
+from xpclient.utils import to_experiment, store_model, write_config_file
 from mead.utils import hash_config, get_dataset_from_key, index_by_label
 from baseline.utils import read_config_file
 
@@ -23,7 +23,7 @@ EVENT_TYPES = {
 }
 
 
-class ServerManager(object):
+class ServerManager:
     
     api = None
     host = None

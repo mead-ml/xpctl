@@ -7,11 +7,11 @@ import json
 from baseline.reporting import EpochReportingHook
 from mead.utils import read_config_file_or_json
 from baseline.reporting import register_reporting
-from xpctl.xpclient import Configuration
-from xpctl.xpclient.api import XpctlApi
-from xpctl.xpclient import ApiClient
-from xpctl.xpclient.rest import ApiException
-from xpctl.utils import to_swagger_experiment, store_model
+from xpclient import Configuration
+from xpclient.api import XpctlApi
+from xpclient import ApiClient
+from xpclient.rest import ApiException
+from xpclient.utils import to_experiment, store_model
 from mead.utils import hash_config
 
 
@@ -60,7 +60,7 @@ class XPCtlReporting(EpochReportingHook):
         try:
             result = self.api.put_result(
                 self.task,
-                to_swagger_experiment(self.task,
+                to_experiment(self.task,
                                       self.exp_config,
                                       self.log,
                                       username=self.username,

@@ -16,7 +16,7 @@ import re  # noqa: F401
 
 import six
 
-from xpctl.xpclient.models.result import Result  # noqa: F401,E501
+from xpclient.models.result import Result  # noqa: F401,E501
 
 
 class Experiment(object):

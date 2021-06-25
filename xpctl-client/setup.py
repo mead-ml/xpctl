@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 from xpctl import __version__
 
 
-class About(object):
-    NAME = 'xpctl'
+class About:
+    NAME = 'xpctl-client'
     AUTHOR = 'mead-ml'
     VERSION = __version__
     EMAIL = "mead.baseline@gmail.com"
@@ -44,34 +44,13 @@ def main():
         url=About.URL,
         packages=find_packages(),
         install_requires=[
-            'click',
-            'click-shell',
-            'pandas',
-            'xlsxwriter',
-            'jsondiff',
             'pyyaml',
             'certifi>=14.05.14',
             'six>=1.10',
             'python_dateutil>=2.5.3',
             'setuptools>=21.0.0',
             'urllib3>=1.15.1',
-            'mead-xpctl-client=={}'.format(About.VERSION),
         ],
-        entry_points={
-            'console_scripts': [
-                'xpctl = xpctl.cli:cli'
-            ],
-        },
-        extras_require={
-            'test': [],
-            'mongo': [
-                'pymongo',
-            ],
-            'sql': [
-                'sqlalchemy', 
-                'psycopg2',
-            ]
-        },
         classifiers={
             'Development Status :: 2 - Pre-Alpha',
             'Environment :: Console',
