@@ -1,10 +1,10 @@
 import json
 import pytest
-from xpctl.xpclient import Configuration
-from xpctl.xpclient.api import XpctlApi
-from xpctl.xpclient import ApiClient
-from xpctl.xpclient.models import Experiment, Result
-from xpctl.xpclient.rest import ApiException
+from xpclient import Configuration
+from xpclient.api import XpctlApi
+from xpclient import ApiClient
+from xpclient.models import Experiment, Result
+from xpclient.rest import ApiException
 from mead.utils import hash_config
 from collections import namedtuple
 import datetime

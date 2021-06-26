@@ -16,7 +16,7 @@ import re  # noqa: F401
 
 import six
 
-from xpctl.xpclient.models.aggregate_result import AggregateResult  # noqa: F401,E501
+from xpclient.models.aggregate_result import AggregateResult  # noqa: F401,E501
 
 
 class ExperimentAggregate(object):

@@ -3,9 +3,9 @@ import shutil
 from baseline.utils import unzip_model, read_config_file, write_json, str_file
 import json
 import yaml
-from xpctl.xpclient import Configuration, ApiClient
-from xpctl.xpclient.api import XpctlApi
-from xpctl.xpclient.models import Result, Experiment
+from xpclient import Configuration, ApiClient
+from xpclient.api import XpctlApi
+from xpclient.models import Result, Experiment
 
 
 def read_logs(file_name):
@@ -36,7 +36,7 @@ def flatten(_list):
     return [item for sublist in _list for item in sublist]
 
 
-def to_swagger_experiment(task, config, log, **kwargs):
+def to_experiment(task, config, log, **kwargs):
     if type(log) is not str:  # this is a log object and not a file
         events_obj = log
     else:

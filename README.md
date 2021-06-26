@@ -11,9 +11,12 @@
  
 ### Installation
 
+- There are 2 components: `mead-xpctl-client` and `mead-xpctl`
+  - `mead-xpctl-client` provides the HTTP client and the addon required to run logging from inside `mead-baseline`
+  - `mead-xpctl` contains the CLI and the server implementation
+  - Both packages can be installed via pip:
+    - `pip install mead-xpctl-client`
+    - `pip install mead-xpctl` (this depends on the `mead-xpctl-client`)
 -  [Install the server](https://github.com/mead-ml/xpctl/blob/master/orchestration/README.md)
--  Install the client
-  - `pip install mead-xpctl`
-  - or locally with `pip install -e .`
 
 ### [Documentation](https://github.com/mead-ml/xpctl/blob/master/docs/main.md)

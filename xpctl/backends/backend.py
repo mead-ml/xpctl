@@ -6,7 +6,7 @@ import os
 import numpy as np
 from flask import abort
 
-from xpctl.utils import write_config_file
+from xpclient.utils import write_config_file
 
 from xpctl.xpserver.models import Experiment as ServerExperiment
 from xpctl.xpserver.models import Result as ServerResult

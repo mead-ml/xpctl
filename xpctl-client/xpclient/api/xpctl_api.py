@@ -18,7 +18,7 @@ import re  # noqa: F401
 # python 2 and python 3 compatibility library
 import six
 
-from xpctl.xpclient.api_client import ApiClient
+from xpclient.api_client import ApiClient
 
 
 class XpctlApi(object):

@@ -2,11 +2,11 @@ import os
 import re
 import shutil
 from setuptools import setup, find_packages
-from xpctl import __version__
+from xpclient import __version__
 
 
-class About(object):
-    NAME = 'xpctl'
+class About:
+    NAME = 'xpctl-client'
     AUTHOR = 'mead-ml'
     VERSION = __version__
     EMAIL = "mead.baseline@gmail.com"
@@ -16,19 +16,8 @@ class About(object):
 
 
 def read_doc(f_name, new_name=None):
-    """
-    Because our readme is outside of this dir we need to copy it in so
-    that it is picked up by the install.
-    """
-    if new_name is None:
-        new_name = f_name
-    path = os.path.dirname(os.path.realpath(__file__))
-    doc_loc = os.path.normpath(os.path.join(path, '..', f_name))
-    new_loc = os.path.join(path, new_name)
-    if os.path.isfile(doc_loc):
-        shutil.copyfile(doc_loc, new_loc)
-    descript = open(new_loc, 'r').read()
-    return descript
+    with open('README.md', 'r') as rf:
+        return rf.read()
 
 
 def main():
@@ -44,34 +33,13 @@ def main():
         url=About.URL,
         packages=find_packages(),
         install_requires=[
-            'click',
-            'click-shell',
-            'pandas',
-            'xlsxwriter',
-            'jsondiff',
             'pyyaml',
             'certifi>=14.05.14',
             'six>=1.10',
             'python_dateutil>=2.5.3',
             'setuptools>=21.0.0',
             'urllib3>=1.15.1',
-            'mead-xpctl-client=={}'.format(About.VERSION),
         ],
-        entry_points={
-            'console_scripts': [
-                'xpctl = xpctl.cli:cli'
-            ],
-        },
-        extras_require={
-            'test': [],
-            'mongo': [
-                'pymongo',
-            ],
-            'sql': [
-                'sqlalchemy', 
-                'psycopg2',
-            ]
-        },
         classifiers={
             'Development Status :: 2 - Pre-Alpha',
             'Environment :: Console',
