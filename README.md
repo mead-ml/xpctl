@@ -1,12 +1,14 @@
 ## XPCTL
 
-`xpctl` is software to track experimental results and provide access to a global leaderboard. After running an experiment, the results and the logs are committed to a database. Several commands are provided to show the best experimental results under various constraints.
+`xpctl` is software to track experimental results and provide access to a global leaderboard. After running an experiment, the results and the logs are committed to a database. Commands are provided to show the best experimental results under various constraints.
 
 `xpctl` was developed as the primary backend for experiment storage for [mead-baseline](https://github.com/dpressel/mead-baseline/).
 
 ### Prerequisite
 
 `xpctl` requires a database to be installed locally or an accessible server. We currently support:  [mongodb](https://docs.mongodb.com/) and [postgresql](https://www.postgresql.org/)), but the base classes can be extended to support other databases. Create a database called `reporting_db` in your db instance.
+
+The client API is packaged separately with minimal requirements.
 
  
 ### Installation
