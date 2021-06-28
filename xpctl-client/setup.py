@@ -1,18 +1,25 @@
 import os
 import re
 import shutil
+import ast
 from setuptools import setup, find_packages
-from xpclient import __version__
+
+def get_version(file_name, version_name="__version__"):
+    with open(file_name) as f:
+        tree = ast.parse(f.read())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                if node.targets[0].id == version_name:
+                    return node.value.s
+    raise ValueError(f"Unable to find an assignment to the variable {version_name} in file {file_name}")
 
 
 class About:
     NAME = 'xpctl-client'
     AUTHOR = 'mead-ml'
-    VERSION = __version__
+    VERSION = get_version("xpclient/version.py")
     EMAIL = "mead.baseline@gmail.com"
     URL = "https://www.github.com/{}/{}".format(AUTHOR, NAME)
-    DOC_NAME = "docs/{}.md".format(NAME)
-    DOC_URL = "{}/docs/".format(URL)
 
 
 def read_doc(f_name, new_name=None):
@@ -25,7 +32,7 @@ def main():
         name='mead-{}'.format(About.NAME),
         version=About.VERSION,
         description='Experiment Control and Tracking',
-        long_description=read_doc(About.DOC_NAME, "README.md"),
+        long_description='Experiment Control and Tracking (xpctl) REST client library',
         long_description_content_type="text/markdown",
         author=About.AUTHOR,
         author_email=About.EMAIL,
