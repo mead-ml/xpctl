@@ -20,7 +20,7 @@ jobs:
         - name: Build xpctl-client package
           run: |
               cd xpctl-client
-              python setup.py sdist bdist_wheel
+              python setup.py sdist bdist_wheel --no-use-pep517
               cd ../
         - name: Publish xpctl-client package
           if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
