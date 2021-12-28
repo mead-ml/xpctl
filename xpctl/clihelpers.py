@@ -1,5 +1,5 @@
 import pandas as pd
-from xpctl.utils import write_config_file
+from xpclient.utils import write_config_file
 import json
 import ast
 
