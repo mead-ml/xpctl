@@ -212,7 +212,7 @@ class MongoRepo(XPRepo):
         projection.update({event_type: 1})
         return projection
 
-    def list_results(self, task, param_dict, user, metric, sort, event_type):
+    def list_results(self, task, param_dict, user, metric, sort, event_type, limit=10, offset=0):
         if event_type is None or event_type == 'None':
             event_type = 'test_events'
         metrics = [x for x in listify(metric) if x.strip()]
@@ -221,23 +221,19 @@ class MongoRepo(XPRepo):
             param_dict.update({'username': users})
         coll = self.db[task]
         query = self._update_query({}, **param_dict)
-        all_results = list(coll.find(query))
+        cursor = coll.find(query)
+        if sort and sort != 'None':
+            if sort in METRICS_SORT_ASCENDING:
+                cursor = cursor.sort([(f"test_events.{sort}", pymongo.ASCENDING)])
+            else:
+                cursor = cursor.sort([(f"test_events.{sort}", pymongo.DESCENDING)])
+        cursor = cursor.skip(offset).limit(limit)
+
+        all_results = list(cursor)
         if not all_results:
             return BackendError(message='no information available for {} in task database [{}]'
                                 .format(param_dict, task))
-        experiments = mongo_to_experiment_set(task, all_results, event_type=event_type, metrics=metrics)
-        if type(experiments) == BackendError:
-            return experiments
-        if sort is None or sort == 'None':
-            return experiments
-        else:
-            if event_type == 'test_events':
-                if sort in METRICS_SORT_ASCENDING:
-                    return experiments.sort(sort, reverse=False)
-                else:
-                    return experiments.sort(sort)
-            else:
-                return BackendError(message='experiments can only be sorted when event_type=test_events')
+        return mongo_to_experiment_set(task, all_results, event_type=event_type, metrics=metrics)
 
     def find_experiments(self, task, prop, value):
         d = {prop: value}

@@ -10,6 +10,7 @@ class Result(Model):
     phase: str
     tick: int
     tick_type: str
+    value: float
 
 
 class AggregateResultValue(Model):
@@ -27,7 +28,7 @@ class Experiment(Model):
     sha1: str
     config: str
     dataset: str
-    username: str
+    username: Optional[str] = None
     hostname: str
     exp_date: Optional[datetime] = None
     label: str
