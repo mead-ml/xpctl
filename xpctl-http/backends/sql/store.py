@@ -7,7 +7,7 @@ import getpass
 from baseline.utils import listify
 from mead.utils import hash_config
 from baseline.version import __version__
-from xpctl.backends.backend import log2json, get_experiment_label, METRICS_SORT_ASCENDING, safe_get, \
+from backend.core import log2json, get_experiment_label, METRICS_SORT_ASCENDING, safe_get, \
     client_experiment_to_put_result_consumable, write_experiment, aggregate_results
 from xpctl.backends.backend import BackendError, BackendSuccess, TaskDatasetSummary, TaskDatasetSummarySet, Experiment, Result, \
     ExperimentSet, EVENT_TYPES
@@ -19,8 +19,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 import sqlalchemy as sql
 import sqlalchemy.orm as orm
-from xpctl.backends.core import ExperimentRepo
-
+from backends.core import *
 
 class SqlResult(Base):
     __tablename__ = 'results'
@@ -60,7 +59,7 @@ class SqlExperiment(Base):
     events = orm.relationship('SqlEvent', back_populates='experiment', cascade='all,delete')
 
 
-class SQLRepo(ExperimentRepo):
+class SQLRepo(XPRepo):
 
     def _connect(self, uri):
         self.engine = sql.create_engine(uri, echo=False, paramstyle='format', pool_size=100)
@@ -68,7 +67,7 @@ class SQLRepo(ExperimentRepo):
         self.Session = orm.sessionmaker(bind=self.engine)
 
     def __init__(self, **kwargs):
-        super(SQLRepo, self).__init__()
+        super().__init__()
 
         uri = kwargs.get('uri', None)
         if uri is None:

@@ -4,17 +4,177 @@ from itertools import groupby
 import json
 import os
 import numpy as np
-from flask import abort
+
+
+EVENT_TYPES = {
+    "train": "train_events", "Train": "train_events",
+    "test": "test_events", "Test": "test_events",
+    "valid": "valid_events", "Valid": "valid_events",
+    "dev": "valid_events", "Dev": "valid_events"
+}
+
+
+def safe_get(_object, key, alt):
+    val = _object.get(key)
+    if val is None or str(val) is None:
+        return alt
+    return val
+
+class XPRepo:
+
+    def __init__(self):
+        super().__init__()
+
+    def get_task_names(self):
+        """Get the names of all tasks in the repository
+
+        :return: A list of tasks
+        """
+
+    def config2dict(self, task, sha1):
+        """Convert a configuration stored in the repository to a string
+
+        :param task: (``str``) The task name
+        :param sha1: (``str``) The sha1 of the configuration
+        :return: (``dict``) The configuration
+        """
+
+    @staticmethod
+    def create_repo(**kwargs):
+        """Create a MongoDB-backed repository
+
+        :param dbtype: (``str``) The database type
+        :param dbhost: (``str``) The host name
+        :param dbport: (``str``) The port
+        :param user: (``str``) The user
+        :param passwd: (``str``)The password
+        :return: A MongoDB/Sql-backed repository
+        """
+        dbhost = kwargs.get('dbhost', kwargs.get('host'))
+        dbport = kwargs.get('dbport', kwargs.get('port'))
+        user = kwargs.get('dbuser', kwargs.get('user'))
+        passwd = kwargs.get('dbpasswd', kwargs.get('passwd'))
+        dbtype = kwargs.get('dbtype', kwargs.get('type', 'mongo'))
+
+
+        if dbtype == 'mongo':
+            from backends.mongo.store import MongoRepo
+            return MongoRepo(dbhost, int(dbport), user, passwd)
+        else:
+            from backends.sql.store import SQLRepo
+            return SQLRepo(type=dbtype, host=dbhost, port=dbport, user=user, passwd=passwd)
+
+    def get_model_location(self, task, eid):
+        """Get the physical location of the model specified by this experiment id
+
+        :param task: (``str``) The task name
+        :param eid: The identifier of the experiment
+        :return: (``str``) The model location
+        """
+
+    def get_experiment_details(self, task, eid, event_type, metric):
+        """Get detailed description for an experiment
+        :param task: (``str``) The task name
+        :param eid: The identifier of the experiment
+        :param event_type: (List[``str``]) event types to listen for
+        :param metric: (List[``str``]) The metric(s) to use
+        :return: xpctl.backend.data.Experiment object
+        """
+
+    def get_results(self, task, param_dict, reduction_dim, metric, sort, numexp_reduction_dim, event_type):
+        """Get results from the database
+        :param task: (``str``) The taskname
+        :param param_dict: (``dict``) The dict of parameters for query
+        :param reduction_dim: (``str``) The property on which the results will be reduced
+        :param metric: (``str``) The metric(s) to use
+        :param sort: (``str``) The field to sort on
+        :param numexp_reduction_dim: (``str``) number of results to show per group
+        :param event_type: (``str``) event types to listen for
+        :return: List[xpctl.backend.data.ExperimentAggregate]
+        """
+
+    def task_summary(self, task):
+        """Summary for a task: What datasets were used? How many times each dataset was used?
+        :param task: (``str``) Task name
+        :return xpctl.backend.data.TaskSummary
+        """
+
+    def summary(self):
+        """
+        Summary for all tasks in the database
+        :return: List[xpctl.backend.data.TaskSummary]
+        """
+
+    def find_experiments(self, task, prop, value):
+        """
+        find experiments by a property, eg: dataset
+        :param task: (``str``) task name
+        :param prop: (``str``) a property of an experiment, eg: dataset, label
+        :param value: (``str``) value for the property
+        :return: List[xpctl.backend.data.Experiment]
+        """
+
+    def update_prop(self, task, eid, prop, value):
+        """
+        Update a property(label, username etc) for an experiment
+        :param task: (``str``) task name
+        :param eid: The identifier for this record
+        :param prop: (``str``) property to change
+        :param value: (``str``) the value of the property
+        :return: Union[xpctl.backend.data.Success, xpctl.backend.data.Error]
+        """
+        raise NotImplemented("Base ExperimentRepo events are immutable")
+
+    def remove_experiment(self, task, eid):
+        """Remove a record specified by this id
+        :param task: (``str``) The task name for this record
+        :param eid: The identifier for this record
+        :return: Union[xpctl.backend.data.Success, xpctl.backend.data.Error]
+        """
+        raise NotImplemented("Base ExperimentRepo tasks are immutable")
+
+    def put_result(self, task, experiment):
+        """Put tan experiment in the database
+
+        :param task: (``str``) The task name
+        :param experiment: xpctl.backend.data.Experiment
+        :return: Union[xpctl.backend.data.Success, xpctl.backend.data.Error]
+        """
+
+    def list_results(self, task, param_dict, user, metric, sort, event_type):
+        """Get results from the database
+        :param task: (``str``) The taskname
+        :param param_dict: (``dict``) The dict of parameters for query
+        :param user: List[``str``)] filter by users
+        :param metric: (``str``) The metric(s) to use
+        :param sort: (``str``) The field to sort on
+        :param event_type: (``str``) event types to listen for
+        :return: List[xpctl.backend.data.Experiment]
+        """
+
+    def dump(self, zipfile, task_eids):
+        """
+        dump the whole database. creates a zipfile which unzips into the following directory structure
+        <xpctldump>
+         - <task>
+           - <id>
+             - <id>-reporting.log
+             - <id>-config.yml
+             - <id>-meta.yml (any meta info such as label, username etc.)
+
+        :param zipfile: zip file location for the dump. defaults to xpctldump-datetimestamp.zip
+        :param task_eids: a dictionary of the form {'task': [eid1, eid2]}, if you want to dump specific files.
+        :return: the path to the dumped file
+        """
+
+    def restore(self, dump):
+        """
+        restore a database from the dump. be careful: the experiment ids will change.
+        :param dump: dump file location
+        :return:
+        """
 
 from xpclient.utils import write_config_file
-
-from xpctl.xpserver.models import Experiment as ServerExperiment
-from xpctl.xpserver.models import Result as ServerResult
-from xpctl.xpserver.models import ExperimentAggregate as ServerExperimentAggregate
-from xpctl.xpserver.models import Response as ServerResponse
-from xpctl.xpserver.models import TaskSummary as ServerTaskSummary
-from xpctl.xpserver.models import AggregateResult as ServerAggregateResult
-from xpctl.xpserver.models import AggregateResultValues
 
 
 TRAIN_EVENT = 'train_events'
@@ -26,7 +186,7 @@ EVENT_TYPES = [TRAIN_EVENT, VALID_EVENT, TEST_EVENT]
 METRICS_SORT_ASCENDING = ['avg_loss', 'perplexity']
 
 
-class Result(object):
+class Result:
     def __init__(self, metric, value, tick_type, tick, phase):
         super(Result, self).__init__()
         self.metric = metric
@@ -41,7 +201,7 @@ class Result(object):
         return self.__dict__[field]
 
 
-class AggregateResult(object):
+class AggregateResult:
     def __init__(self, metric, values):
         super(AggregateResult, self).__init__()
         self.metric = metric
@@ -53,7 +213,7 @@ class AggregateResult(object):
         return self.__dict__[field]
 
 
-class Experiment(object):
+class Experiment:
     """ an experiment"""
     def __init__(self, train_events, valid_events, test_events, task, eid, username, hostname, config, exp_date, label,
                  dataset, sha1, version):
@@ -88,20 +248,20 @@ class Experiment(object):
             raise NotImplementedError('no handler for event type: [{}]'.format(event_type))
 
 
-class ExperimentSet(object):
+class ExperimentSet:
     """ a list of experiment objects"""
     def __init__(self, data):
         super(ExperimentSet, self).__init__()
         self.data = data if data else []  # this should ideally be a set but the items are not hashable
         self.length = len(self.data)
-    
+
     def __getitem__(self, i):
         return self.data[i]
-    
+
     def __iter__(self):
         for i in range(self.length):
             yield self.data[i]
-    
+
     def __len__(self):
         return self.length
 
@@ -113,7 +273,7 @@ class ExperimentSet(object):
         """
         self.data.append(datum)
         self.length += 1
-        
+
     def groupby(self, key):
         """ group the data points by key"""
         data_groups = {}
@@ -148,10 +308,10 @@ class ExperimentSet(object):
         return ExperimentSet(data=final_results)
 
 
-class ExperimentGroup(object):
+class ExperimentGroup:
     """ a group of resultset objects"""
     def __init__(self, grouped_experiments, reduction_dim, task):
-        super(ExperimentGroup, self).__init__()
+        super().__init__()
         self.grouped_experiments = grouped_experiments
         self.reduction_dim = reduction_dim
         self.task = task
@@ -222,25 +382,25 @@ class ExperimentGroup(object):
         del prop_dict['dataset']  # prop_dict must have dataset
         for reduction_dim_value in data:
             for dataset in data[reduction_dim_value]:
-                    prop_dict.update({'dataset': dataset})
-                    values = {}
-                    d = {
-                        self.reduction_dim: reduction_dim_value,
-                        'num_exps': num_experiments[reduction_dim_value][dataset],
-                        **prop_dict
-                    }
-                    agr = deepcopy(ExperimentAggregate(task=self.task, **d))
-                    for metric in data[reduction_dim_value][dataset]:
-                        for fn_name, fn in aggregate_fns.items():
-                            agg_value = fn(data[reduction_dim_value][dataset][metric])
-                            print(metric, dataset, fn_name, data[reduction_dim_value][dataset][metric], agg_value)
-                            values[fn_name] = agg_value
-                        agr.add_result(deepcopy(AggregateResult(metric=metric, values=values)), event_type=event_type)
-                    aggregate_resultset.add_data(agr)
+                prop_dict.update({'dataset': dataset})
+                values = {}
+                d = {
+                    self.reduction_dim: reduction_dim_value,
+                    'num_exps': num_experiments[reduction_dim_value][dataset],
+                    **prop_dict
+                }
+                agr = deepcopy(ExperimentAggregate(task=self.task, **d))
+                for metric in data[reduction_dim_value][dataset]:
+                    for fn_name, fn in aggregate_fns.items():
+                        agg_value = fn(data[reduction_dim_value][dataset][metric])
+                        print(metric, dataset, fn_name, data[reduction_dim_value][dataset][metric], agg_value)
+                        values[fn_name] = agg_value
+                    agr.add_result(deepcopy(AggregateResult(metric=metric, values=values)), event_type=event_type)
+                aggregate_resultset.add_data(agr)
         return aggregate_resultset
 
 
-class ExperimentAggregate(object):
+class ExperimentAggregate:
     """ a result data point"""
     def __init__(self, task, train_events=[], valid_events=[], test_events=[], **kwargs):
         super(ExperimentAggregate, self).__init__()
@@ -270,7 +430,7 @@ class ExperimentAggregate(object):
             raise NotImplementedError('no handler for event type: [{}]'.format(event_type))
 
 
-class ExperimentAggregateSet(object):
+class ExperimentAggregateSet:
     """ a list of aggregate result objects"""
     def __init__(self, data):
         super(ExperimentAggregateSet, self).__init__()
@@ -316,7 +476,7 @@ class ExperimentAggregateSet(object):
         return ExperimentSet(data=final_results)
 
 
-class TaskDatasetSummary(object):
+class TaskDatasetSummary:
     """ How many users experimented with this dataset in the given task?"""
     def __init__(self, task, dataset, experiment_set, user_num_exps=None):
         super(TaskDatasetSummary, self).__init__()
@@ -329,7 +489,7 @@ class TaskDatasetSummary(object):
             self.user_num_exps = {username: len(exp_group)for username, exp_group in exp_groups}
 
 
-class TaskDatasetSummarySet(object):
+class TaskDatasetSummarySet:
     """ a list of TaskDatasetSummary objects."""
     def __init__(self, task, data):
         self.task = task
@@ -347,35 +507,10 @@ class TaskDatasetSummarySet(object):
         return TaskSummary(self.task, d)
 
 
-class TaskSummary(object):
+class TaskSummary:
     def __init__(self, task, summary):
         self.task = task
         self.summary = summary
-
-
-class BackendResponse(object):
-    def __init__(self, message, response_type, code=550):
-        super(BackendResponse, self).__init__()
-        self.message = message
-        self.response_type = response_type
-        self.code = code
-
-
-class BackendError(BackendResponse):
-    def __init__(self, message, response_type="error", code=550):
-        super(BackendError, self).__init__(message, response_type, code)
-        self.message = message
-        self.response_type = response_type
-        self.code = code
-
-
-class BackendSuccess(BackendResponse):
-    def __init__(self, message, response_type="success", code=250):
-        super(BackendSuccess, self).__init__(message, response_type, code)
-        self.message = message
-        self.response_type = response_type
-        self.code = code
-
 
 def log2json(log_file):
     s = []
@@ -402,132 +537,6 @@ def get_experiment_label(config_obj, task, **kwargs):
         backend = config_obj.get('backend', 'tensorflow')
         return "{}-{}-{}".format(task, backend, model_type)
 
-
-def safe_get(_object, key, alt):
-    val = _object.get(key)
-    if val is None or str(val) is None:
-        return alt
-    return val
-
-
-def is_error(_object):
-    """
-    poor man's type checking, apparently you can not do `type(_object) == BackendError` when you move that class in the
-    same file
-    :param _object:
-    :return:
-    """
-    if hasattr(_object, 'response_type'):
-        return True
-    return False
-
-
-def serialize_experiment(exp):
-    """
-    serialize an Experiment object for consumption by swagger client
-    :param exp: backends.backend.Experiment
-    :return:
-    """
-    if is_error(exp):
-        return abort(500, exp.message)
-    train_events = [ServerResult(**r.__dict__) for r in exp.train_events]
-    valid_events = [ServerResult(**r.__dict__) for r in exp.valid_events]
-    test_events = [ServerResult(**r.__dict__) for r in exp.test_events]
-    d = exp.__dict__
-    d.update({'train_events': train_events})
-    d.update({'valid_events': valid_events})
-    d.update({'test_events': test_events})
-    return ServerExperiment(**d)
-
-
-def serialize_experiment_aggregate(agg_exps):
-    """
-    serialize an ExperimentAggregate object for consumption by swagger client
-    :param agg_exps: backends.backend.ExperimentAggregate
-    :return:
-    """
-    if is_error(agg_exps):
-        return abort(500, agg_exps.message)
-    results = []
-    for agg_exp in agg_exps:
-        train_events = [ServerAggregateResult(metric=r.metric,
-                                              values=[AggregateResultValues(k, v) for k, v in r.values.items()])
-                        for r in agg_exp.train_events]
-        valid_events = [ServerAggregateResult(metric=r.metric,
-                                              values=[AggregateResultValues(k, v) for k, v in r.values.items()])
-                        for r in agg_exp.valid_events]
-        test_events = [ServerAggregateResult(metric=r.metric,
-                                             values=[AggregateResultValues(k, v) for k, v in r.values.items()])
-                       for r in agg_exp.test_events]
-
-        d = agg_exp.__dict__
-        d.update({'train_events': train_events})
-        d.update({'valid_events': valid_events})
-        d.update({'test_events': test_events})
-        results.append(ServerExperimentAggregate(**d))
-    return results
-
-
-def serialize_experiment_list(exps):
-    """
-    serialize a list of Experiment objects for consumption by swagger client
-    :param exps:
-    :return:
-    """
-    if is_error(exps):
-        return abort(500, exps.message)
-    results = []
-    for exp in exps:
-        if type(exp) == BackendError:
-            return BackendResponse(**exp.__dict__)
-        train_events = [ServerResult(**r.__dict__) for r in exp.train_events]
-        valid_events = [ServerResult(**r.__dict__) for r in exp.valid_events]
-        test_events = [ServerResult(**r.__dict__) for r in exp.test_events]
-        d = exp.__dict__
-        d.update({'train_events': train_events})
-        d.update({'valid_events': valid_events})
-        d.update({'test_events': test_events})
-        results.append(ServerExperiment(**d))
-    return results
-
-
-def serialize_task_summary(task_summary):
-    """
-    serialize a TaskSummary object for consumption by swagger client
-    :param task_summary:
-    :return:
-    """
-    if is_error(task_summary):
-        return abort(500, task_summary.message)
-    return ServerTaskSummary(**task_summary.__dict__)
-
-
-def serialize_task_summary_list(task_summaries):
-    _task_summaries = []
-    for task_summary in task_summaries:
-        if not is_error(task_summary):  # should we abort if we cant get summary for a task in the database?
-            _task_summaries.append(ServerTaskSummary(**task_summary.__dict__))
-    return _task_summaries
-
-
-def serialize_dict(config):
-    """
-    Serializes a dict, exists only to handle the error case
-    :param config:
-    :return:
-    """
-    if is_error(config):
-        return abort(500, config.message)
-    return config
-
-
-def serialize_response(result):
-    """
-    serializes a Response object for swagger client consumption
-    :param result:
-    :return:
-    """
-    return ServerResponse(**result.__dict__)
 
 
 def deserialize_result(result):
@@ -597,3 +606,20 @@ def write_experiment(experiment, basedir):
     [d.pop(event_type) for event_type in EVENT_TYPES]
     d.pop('config')
     write_config_file(d, os.path.join(basedir, '{}-meta.yml'.format(eid)))
+
+
+class BackendResponse:
+    def __init__(self, message, response_type, code=550):
+        super().__init__()
+        self.message = message
+        self.response_type = response_type
+        self.code = code
+
+class BackendError(BackendResponse):
+    def __init__(self, message, response_type="error", code=550):
+        super().__init__(message, response_type, code)
+
+
+class BackendSuccess(BackendResponse):
+    def __init__(self, message, response_type="success", code=250):
+        super().__init__(message, response_type, code)

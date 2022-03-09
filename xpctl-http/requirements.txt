@@ -1,0 +1,18 @@
+fastapi == 0.65.2
+pydantic>=1.2.0,<2.0.0
+fastapi_camelcase == 1.0.2
+setuptools >= 21.0.0
+uvicorn[standard]
+numpy
+shortid
+jinja2
+pyyaml >= 5.1
+requests
+requests-async
+python-multipart
+python-jose
+bcrypt
+SQLAlchemy
+psycopg2-binary
+mead-baseline
+xpctl

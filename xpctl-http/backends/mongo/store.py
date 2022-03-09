@@ -6,19 +6,16 @@ import socket
 import getpass
 from baseline.utils import listify, unzip_files, read_config_file
 from mead.utils import hash_config
-from xpctl.backends.core import ExperimentRepo
-from xpctl.backends.backend import TaskDatasetSummary, TaskDatasetSummarySet, BackendSuccess, BackendError, Experiment, ExperimentSet, Result, \
-    EVENT_TYPES, log2json, get_experiment_label, METRICS_SORT_ASCENDING, safe_get, \
-    client_experiment_to_put_result_consumable, aggregate_results, write_experiment
+from backends.core import *
 from bson.objectid import ObjectId
 from baseline.version import __version__
 import logging
 
 
-class MongoRepo(ExperimentRepo):
+class MongoRepo(XPRepo):
 
     def __init__(self, dbhost, dbport, user, passwd):
-        super(MongoRepo, self).__init__()
+        super().__init__()
         self.logger = logging.getLogger('xpctl-mongo')
         self.dbhost = dbhost
         if user and passwd:
@@ -367,11 +364,11 @@ class MongoRepo(ExperimentRepo):
             shutil.rmtree(dump_dir)
 
 
-class MongoResult(object):
+class MongoResult:
     """ a result data point"""
     def __init__(self, metric, value, task, eid, username, hostname, label, config, dataset, date, sha1, event_type,
                  tick_type, tick, phase, version):
-        super(MongoResult, self).__init__()
+        super().__init__()
         self.metric = metric
         self.value = value
         self.task = task
@@ -393,10 +390,10 @@ class MongoResult(object):
         return self.__dict__[field]
 
 
-class MongoResultSet(object):
+class MongoResultSet:
     """ a list of result objects"""
     def __init__(self, data):
-        super(MongoResultSet, self).__init__()
+        super().__init__()
         self.data = data if data else []
         self.length = len(self.data)
 
