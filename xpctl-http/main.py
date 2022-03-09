@@ -14,7 +14,7 @@ import git
 from datetime import datetime
 import logging
 from eight_mile.utils import read_yaml
-
+from typing import Optional
 
 from models import Result as ServerResult
 from models import AggregateResultValue as ServerAggregateResultValue
@@ -62,8 +62,6 @@ def ping():
 def serialize_experiment_list(exps):
     results = []
     for exp in exps:
-        if type(exp) == BackendError:
-            raise Exception(BackendError.message)
         train_events = [ServerResult(**r.__dict__) for r in exp.train_events]
         valid_events = [ServerResult(**r.__dict__) for r in exp.valid_events]
         test_events = [ServerResult(**r.__dict__) for r in exp.test_events]
@@ -71,6 +69,7 @@ def serialize_experiment_list(exps):
         d.update({'train_events': train_events})
         d.update({'valid_events': valid_events})
         d.update({'test_events': test_events})
+        d['config'] = json.dumps(d['config'])
         results.append(ServerExperiment(**d))
     return results
 
@@ -86,7 +85,6 @@ async def list_experiments_by_prop(
         sort: Optional[str]=None,
         event_type: Optional[str]=None
 ):
-    REPO.list_results(task, param_dict, user, metric, sort, event_type)
     param_dict = {}
     if eid:
         param_dict['eid'] = eid
@@ -96,7 +94,9 @@ async def list_experiments_by_prop(
         param_dict['dataset'] = dataset
     if label:
         param_dict['label'] = label
-    return serialize_experiment_list(backend.list_results(task, param_dict, user, metric, sort, event_type))
+    results = REPO.list_results(task, param_dict, user, metric, sort, event_type)
+    print(results)
+    return serialize_experiment_list(results)
 
 """
 @app.put("{task}")
