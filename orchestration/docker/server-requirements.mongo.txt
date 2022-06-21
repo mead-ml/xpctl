@@ -1,5 +1,5 @@
 werkzeug == 0.16.0
 connexion == 2.2.0
 pymongo == 3.7.2
-numpy == 1.16.0
+numpy == 1.22.0
 mead-baseline >= 2.0.1
